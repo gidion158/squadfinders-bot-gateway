@@ -13,6 +13,7 @@ export const config = {
     secret: process.env.COOKIE_SECRET || 'a-very-secret-and-strong-password-for-cookies',
   },
   server: {
+    proxypass: process.env.PROXY_PASS || false,
     url: process.env.SERVER_URL || 'http://localhost',
     port: process.env.PORT || 3000,
   },

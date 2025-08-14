@@ -61,34 +61,34 @@ app.use('/api/players', playerRoutes);
 
 
 // ADMINJS SETUP WITH ROLE-BASED ACCESS CONTROL
-const isAdmin = ({ currentAdmin }) => currentAdmin && currentAdmin.role === 'admin';
-const viewerRole =  {
-                    // The 'viewer' role can only see lists and individual records admin can add
-                    new: {isAccessible: isAdmin},
-                    edit: {isAccessible: isAdmin},
-                    delete: {isAccessible: isAdmin},
-                    bulkDelete: {isAccessible: isAdmin},
-                    // Everyone can see the list and individual records
-                    list: {isAccessible: true},
-                    show: {isAccessible: true},
-                }
-const adminRole =  {
-                    // The 'viewer' role can only see lists and individual records
-                    new: {isAccessible: isAdmin},
-                    edit: {isAccessible: isAdmin},
-                    delete: {isAccessible: isAdmin},
-                    bulkDelete: {isAccessible: isAdmin},
-                    // admin role only access
-                    list: {isAccessible: isAdmin},
-                    show: {isAccessible: isAdmin},
-                }
+const isAdmin = ({currentAdmin}) => currentAdmin && currentAdmin.role === 'admin';
+const viewerRole = {
+    // The 'viewer' role can only see lists and individual records admin can add
+    new: {isAccessible: isAdmin},
+    edit: {isAccessible: isAdmin},
+    delete: {isAccessible: isAdmin},
+    bulkDelete: {isAccessible: isAdmin},
+    // Everyone can see the list and individual records
+    list: {isAccessible: true},
+    show: {isAccessible: true},
+}
+const adminRole = {
+    // The 'viewer' role can only see lists and individual records
+    new: {isAccessible: isAdmin},
+    edit: {isAccessible: isAdmin},
+    delete: {isAccessible: isAdmin},
+    bulkDelete: {isAccessible: isAdmin},
+    // admin role only access
+    list: {isAccessible: isAdmin},
+    show: {isAccessible: isAdmin},
+}
 
 const admin = new AdminJS({
     resources: [
         {
             resource: Player,
             options: {
-                actions: viewerRole ,
+                actions: viewerRole,
                 listProperties: ['message_date', 'platform', 'group.group_title', 'sender.username', 'rank', 'active'],
                 filterProperties: ['platform', 'active', 'sender.gender', 'group.group_username', 'message_date'],
                 showProperties: ['message_id', 'message_date', 'platform', 'group.group_id', 'group.group_title', 'sender.id', 'sender.username', 'sender.gender', 'rank', 'active', 'message', 'createdAt', 'updatedAt']
@@ -136,6 +136,13 @@ app.use(admin.options.rootPath, adminRouter);
 // Start Server
 const URL = config.server.url;
 const PORT = config.server.port;
-app.listen(PORT, () =>
-    console.log(`✅ Admin: ${URL}:${PORT}/admin | Swagger: ${URL}:${PORT}/docs`)
+const proxy_pass = config.server.proxypass;
+app.listen(PORT, () => {
+        // for proxy pass via nginx
+        if (proxy_pass === 'true') {
+            console.log(`✅ Admin: ${URL}/admin | Swagger: ${URL}/docs`)
+        } else {
+            console.log(`✅ Admin: ${URL}:${PORT}/admin | Swagger: ${URL}:${PORT}/docs`)
+        }
+    }
 );
