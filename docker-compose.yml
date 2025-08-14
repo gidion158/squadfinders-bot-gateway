@@ -4,8 +4,6 @@ services:
     build:
       context: ./bot-gateway
     container_name: bot-gateway
-    ports:
-      - "3000:3000"
     environment:
       - SERVER_URL=https://gateway.squadfinders.ir
       - PORT=3000 # inside port

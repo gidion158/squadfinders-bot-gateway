@@ -59,6 +59,10 @@ const swaggerSpec = swaggerJsdoc({
 app.use('/docs', authMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/players', playerRoutes);
 
+// For Cannot GET / Message
+app.get('/', (req, res) => {
+    res.sendStatus(405);
+});
 
 // ADMINJS SETUP WITH ROLE-BASED ACCESS CONTROL
 const isAdmin = ({currentAdmin}) => currentAdmin && currentAdmin.role === 'admin';
