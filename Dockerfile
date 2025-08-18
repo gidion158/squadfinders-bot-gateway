@@ -19,4 +19,4 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
 # Start the app
-CMD ["node", "server.js"]
+CMD ["npm", "start"]

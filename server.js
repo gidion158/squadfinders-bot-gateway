@@ -56,7 +56,7 @@ const swaggerSpec = swaggerJsdoc({
 
 
 // Mount Routes
-app.use('/docs', authMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// app.use('/docs', authMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/players', playerRoutes);
 
 // For Cannot GET / Message
@@ -93,9 +93,9 @@ const admin = new AdminJS({
             resource: Player,
             options: {
                 actions: viewerRole,
-                listProperties: ['message_date', 'platform', 'group.group_title', 'sender.username', 'rank', 'active'],
-                filterProperties: ['platform', 'active', 'sender.gender', 'group.group_username', 'message_date'],
-                showProperties: ['message_id', 'message_date', 'platform', 'group.group_id', 'group.group_title', 'sender.id', 'sender.username', 'sender.gender', 'rank', 'active', 'message', 'createdAt', 'updatedAt']
+                listProperties: ['message_date', 'platform', 'group.group_title', 'sender.username', 'players_count', 'game_mode', 'active'],
+                filterProperties: ['platform', 'active', 'sender.gender', 'group.group_username', 'message_date', 'game_mode'],
+                showProperties: ['message_id', 'message_date', 'platform', 'group.group_id', 'group.group_title', 'sender.id', 'sender.username', 'sender.gender', 'rank', 'active', 'players_count', 'game_mode','message', 'createdAt', 'updatedAt']
             }
         },
         {
@@ -144,9 +144,9 @@ const proxy_pass = config.server.proxypass;
 app.listen(PORT, () => {
         // for proxy pass via nginx
         if (proxy_pass === 'true') {
-            console.log(`✅ Admin: ${URL}/admin | Swagger: ${URL}/docs`)
+            console.log(`✅ Admin: ${URL}/admin | API: ${URL}/api/players/`)
         } else {
-            console.log(`✅ Admin: ${URL}:${PORT}/admin | Swagger: ${URL}:${PORT}/docs`)
+            console.log(`✅ Admin: ${URL}:${PORT}/admin | API: ${URL}:${PORT}/api/players/`)
         }
     }
 );

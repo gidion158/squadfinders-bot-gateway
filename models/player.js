@@ -3,7 +3,9 @@ import bcrypt from 'bcrypt';
 
 // Players
 const PlayerSchema = new mongoose.Schema({
-    message_id: {type: Number, required: true},
+    message_id: {
+        type: Number, required: true, unique: true, index: true
+    },
     message_date: {type: Date, required: true},
     sender: {
         id: {type: String, default: null},
@@ -23,10 +25,14 @@ const PlayerSchema = new mongoose.Schema({
     message: {type: String, default: null},
     platform: {
         type: String,
-        enum: ['PC', 'PSN', 'Xbox', 'unknown', 'other'],
+        enum: ['PC', 'Console', 'unknown'],
         default: 'unknown'
     },
     rank: {type: String, default: null},
+    players_count: {type: Number, default: null},
+    game_mode: {
+        type: String, default: 'unknown'
+    },
     active: {type: Boolean, default: false}
 }, {timestamps: true});
 
