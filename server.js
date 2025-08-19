@@ -10,7 +10,8 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 
 import playerRoutes from './routes/players.js';
-import {Player, AdminUser} from './models/player.js';
+import messageRoutes from './routes/messages.js';
+import {Player, Message, AdminUser} from './models/player.js';
 import {config} from './config.js';
 
 // Register AdminJS Mongoose adapter
@@ -58,6 +59,7 @@ const swaggerSpec = swaggerJsdoc({
 // Mount Routes
 // app.use('/docs', authMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/players', playerRoutes);
+app.use('/api/messages', messageRoutes);
 
 // For Cannot GET / Message
 app.get('/', (req, res) => {
@@ -95,7 +97,16 @@ const admin = new AdminJS({
                 actions: viewerRole,
                 listProperties: ['message_date', 'platform', 'group.group_title', 'sender.username', 'players_count', 'game_mode', 'active'],
                 filterProperties: ['platform', 'active', 'sender.gender', 'group.group_username', 'message_date', 'game_mode'],
-                showProperties: ['message_id', 'message_date', 'platform', 'group.group_id', 'group.group_title', 'sender.id', 'sender.username', 'sender.gender', 'rank', 'active', 'players_count', 'game_mode','message', 'createdAt', 'updatedAt']
+                showProperties: ['message_id', 'message_date', 'platform', 'group.group_id', 'group.group_title', 'sender.id', 'sender.username', 'sender.gender', 'rank', 'active', 'players_count', 'game_mode', 'message', 'createdAt', 'updatedAt']
+            }
+        },
+        {
+            resource: Message,
+            options: {
+                actions: viewerRole,
+                listProperties: ['message_date', 'group.group_title', 'sender.username', 'message'],
+                filterProperties: ['group.group_username', 'sender.username', 'message_date'],
+                showProperties: ['message_id', 'message_date', 'group.group_id', 'group.group_title', 'group.group_username', 'sender.id', 'sender.username', 'sender.name', 'message', 'createdAt', 'updatedAt']
             }
         },
         {

@@ -1,6 +1,6 @@
 import express from 'express';
 import basicAuth from 'express-basic-auth';
-import {Player, Message} from '../models/player.js';
+import {Message} from '../models/player.js';
 import {config} from "../config.js";
 import mongoose from 'mongoose';
 
@@ -15,7 +15,7 @@ const authMiddleware = basicAuth({
     challenge: true
 });
 
-// ============ player
+// ============ messages
 router.get('/', authMiddleware, async (req, res) => {
     const {active, platform} = req.query;
     const q = {};
@@ -23,10 +23,10 @@ router.get('/', authMiddleware, async (req, res) => {
     if (platform) q.platform = platform;
 
     try {
-        const data = await Player.find(q).sort({message_date: -1}).limit(500);
+        const data = await Message.find(q).sort({message_date: -1}).limit(500);
         res.json(data);
     } catch {
-        res.status(500).json({error: 'Failed to fetch players'});
+        res.status(500).json({error: 'Failed to fetch Messages'});
     }
 });
 
@@ -34,21 +34,21 @@ router.get('/', authMiddleware, async (req, res) => {
 router.get('/:id', authMiddleware, async (req, res) => {
     const {id} = req.params;
 
-    let player;
+    let message;
     try {
         if (mongoose.Types.ObjectId.isValid(id)) {
             // Try searching by MongoDB _id first
-            player = await Player.findById(id);
+            message = await Message.findById(id);
         }
 
         // If not found, or not a valid ObjectId, try searching by message_id
-        if (!player && !isNaN(id)) {
-            player = await Player.findOne({message_id: parseInt(id, 10)});
+        if (!message && !isNaN(id)) {
+            message = await Message.findOne({message_id: parseInt(id, 10)});
         }
 
-        if (!player) return res.status(404).json({error: 'Player not found'});
+        if (!message) return res.status(404).json({error: 'Message not found'});
 
-        res.json(player);
+        res.json(message);
     } catch (err) {
         res.status(500).json({error: 'Server error', details: err.message});
     }
@@ -57,9 +57,9 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
 router.post('/', authMiddleware, async (req, res) => {
     try {
-        const player = new Player(req.body);
-        await player.save();
-        res.status(201).json(player);
+        const message = new Message(req.body);
+        await message.save();
+        res.status(201).json(message);
     } catch (err) {
         console.log(err)
         if (err.code === 11000) {
@@ -70,29 +70,29 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 router.patch('/:id', authMiddleware, async (req, res) => {
-    const { id } = req.params;
-    let player;
+    const {id} = req.params;
+    let message;
 
     try {
         if (mongoose.Types.ObjectId.isValid(id)) {
-            player = await Player.findByIdAndUpdate(id, req.body, {
+            message = await Message.findByIdAndUpdate(id, req.body, {
                 new: true, runValidators: true
             });
         }
 
-        if (!player && !isNaN(id)) {
-            player = await Player.findOneAndUpdate(
-                { message_id: parseInt(id, 10) },
+        if (!message && !isNaN(id)) {
+            message = await Message.findOneAndUpdate(
+                {message_id: parseInt(id, 10)},
                 req.body,
-                { new: true, runValidators: true }
+                {new: true, runValidators: true}
             );
         }
 
-        if (!player) return res.status(404).json({ error: 'Player not found' });
+        if (!message) return res.status(404).json({error: 'Message not found'});
 
-        res.json(player);
+        res.json(message);
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(400).json({error: err.message});
     }
 });
 

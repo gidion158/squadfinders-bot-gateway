@@ -36,10 +36,31 @@ const PlayerSchema = new mongoose.Schema({
     active: {type: Boolean, default: false}
 }, {timestamps: true});
 
-// An index in MongoDB is a data structure that improves the speed of data retrieval operations on a collection.
 PlayerSchema.index({'group.group_id': 1, message_id: 1}, {unique: true});
 
 const Player = mongoose.model('Player', PlayerSchema);
+
+const MessagesSchema = new mongoose.Schema({
+    message_id: {
+        type: Number, required: true, unique: true, index: true
+    },
+    message_date: {type: Date, required: true},
+    sender: {
+        id: {type: String, default: null},
+        username: {type: String, default: null},
+        name: {type: String, default: null}
+    },
+    group: {
+        group_id: {type: String, default: null},
+        group_title: {type: String, default: null},
+        group_username: {type: String, default: null}
+    },
+    message: {type: String, default: null}
+}, {timestamps: true});
+
+MessagesSchema.index({'group.group_id': 1, message_id: 1}, {unique: true});
+
+const Message = mongoose.model('Message', MessagesSchema);
 
 
 // ADMIN USER MODEL
@@ -60,4 +81,4 @@ AdminUserSchema.pre('save', async function (next) {
 
 const AdminUser = mongoose.model('AdminUser', AdminUserSchema);
 
-export {Player, AdminUser};
+export {Player, AdminUser, Message};
