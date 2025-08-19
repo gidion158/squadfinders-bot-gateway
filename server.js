@@ -94,6 +94,7 @@ const admin = new AdminJS({
         {
             resource: Player,
             options: {
+                perPage: 1000,
                 actions: viewerRole,
                 listProperties: ['message_date', 'platform', 'group.group_title', 'sender.username', 'players_count', 'game_mode', 'active'],
                 filterProperties: ['platform', 'active', 'sender.gender', 'group.group_username', 'message_date', 'game_mode'],
@@ -103,6 +104,7 @@ const admin = new AdminJS({
         {
             resource: Message,
             options: {
+                perPage: 1000,
                 actions: viewerRole,
                 listProperties: ['message_date', 'group.group_title', 'sender.username', 'message'],
                 filterProperties: ['group.group_username', 'sender.username', 'message_date'],
