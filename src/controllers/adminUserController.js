@@ -1,0 +1,100 @@
+import { AdminUser } from '../models/index.js';
+import { handleAsyncError } from '../utils/errorHandler.js';
+import { validateObjectId } from '../utils/validators.js';
+
+export const adminUserController = {
+  // Get all admin users with pagination
+  getAll: handleAsyncError(async (req, res) => {
+    const { page = 1, limit = 100, role } = req.query;
+    const query = {};
+    
+    if (role) query.role = role;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    const [users, total] = await Promise.all([
+      AdminUser.find(query)
+        .select('-password')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit)),
+      AdminUser.countDocuments(query)
+    ]);
+
+    res.json({
+      data: users,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
+  }),
+
+  // Get admin user by ID
+  getById: handleAsyncError(async (req, res) => {
+    const { id } = req.params;
+
+    if (!validateObjectId(id)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
+
+    const user = await AdminUser.findById(id).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ error: 'Admin user not found' });
+    }
+
+    res.json(user);
+  }),
+
+  // Create new admin user
+  create: handleAsyncError(async (req, res) => {
+    const user = new AdminUser(req.body);
+    await user.save();
+    
+    // Remove password from response
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    
+    res.status(201).json(userResponse);
+  }),
+
+  // Update admin user
+  update: handleAsyncError(async (req, res) => {
+    const { id } = req.params;
+
+    if (!validateObjectId(id)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
+
+    const user = await AdminUser.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true
+    }).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ error: 'Admin user not found' });
+    }
+
+    res.json(user);
+  }),
+
+  // Delete admin user
+  delete: handleAsyncError(async (req, res) => {
+    const { id } = req.params;
+
+    if (!validateObjectId(id)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
+
+    const user = await AdminUser.findByIdAndDelete(id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'Admin user not found' });
+    }
+
+    res.json({ message: 'Admin user deleted successfully' });
+  })
+};

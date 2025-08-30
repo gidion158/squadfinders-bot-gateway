@@ -1,10 +1,11 @@
 {
-  "name": "my-admin",
+  "name": "squadfinders-admin",
   "version": "1.0.0",
   "type": "module",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
   },
   "dependencies": {
     "@adminjs/express": "^6.1.1",
@@ -16,21 +17,12 @@
     "express-basic-auth": "^1.2.1",
     "mongoose": "^8.17.1",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "chart.js": "^4.4.0",
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "date-fns": "^3.6.0"
   },
   "devDependencies": {
     "@adminjs/bundler": "^3.0.0"
-  },
-  "description": "",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/amofogh/squadfinders-bot-gateway.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/amofogh/squadfinders-bot-gateway/issues"
-  },
-  "homepage": "https://github.com/amofogh/squadfinders-bot-gateway#readme"
+  }
 }
