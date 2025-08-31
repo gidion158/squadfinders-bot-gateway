@@ -9,6 +9,8 @@ services:
       - PORT=3000 # inside port
       - PROXY_PASS=true # proxy pass with nginx
     restart: unless-stopped
+    depends_on:
+      - mongo
     networks:
       - nginx
 
