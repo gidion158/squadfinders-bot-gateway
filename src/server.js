@@ -55,7 +55,7 @@ app.use('/docs', authMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 }));
 
 // Root route
-app.get('/', (req, res) => {
+app.get('/', authMiddleware, (req, res) => {
   res.json({
     message: 'SquadFinders Bot Gateway API',
     version: '1.0.0',

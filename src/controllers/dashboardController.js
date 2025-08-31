@@ -1,19 +1,21 @@
-import { Player, Message, AdminUser } from '../models/index.js';
+import { Player, Message, AdminUser, AIResponse } from '../models/index.js';
 import { handleAsyncError } from '../utils/errorHandler.js';
 
 export const dashboardController = {
   // Get dashboard statistics
   getStats: handleAsyncError(async (req, res) => {
-    const [playerCount, messageCount, adminUserCount] = await Promise.all([
+    const [playerCount, messageCount, adminUserCount, aiResponseCount] = await Promise.all([
       Player.countDocuments(),
       Message.countDocuments(),
-      AdminUser.countDocuments()
+      AdminUser.countDocuments(),
+      AIResponse.countDocuments()
     ]);
 
-    const [activePlayers, pcPlayers, consolePlayers] = await Promise.all([
+    const [activePlayers, pcPlayers, consolePlayers, lfgResponses] = await Promise.all([
       Player.countDocuments({ active: true }),
       Player.countDocuments({ platform: 'PC' }),
-      Player.countDocuments({ platform: 'Console' })
+      Player.countDocuments({ platform: 'Console' }),
+      AIResponse.countDocuments({ is_lfg: true })
     ]);
 
     res.json({
@@ -21,9 +23,11 @@ export const dashboardController = {
         players: playerCount,
         messages: messageCount,
         adminUsers: adminUserCount,
+        aiResponses: aiResponseCount,
         activePlayers,
         pcPlayers,
-        consolePlayers
+        consolePlayers,
+        lfgResponses
       }
     });
   }),

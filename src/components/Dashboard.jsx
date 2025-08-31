@@ -15,32 +15,17 @@ const Dashboard = () => {
         setLoading(true);
         
         // Fetch dashboard stats
-        const statsResponse = await fetch('/api/dashboard/stats', {
-          headers: {
-            'Authorization': `Basic ${btoa(`${process.env.ADMIN_USER || 'squadfinders'}:${process.env.ADMIN_PASS || 'some-secure-password'}`)}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        const statsResponse = await fetch('/api/dashboard/stats');
         const statsData = await statsResponse.json();
         setStats(statsData.counts);
 
         // Fetch messages over time
-        const messagesResponse = await fetch('/api/dashboard/messages-over-time?days=30', {
-          headers: {
-            'Authorization': `Basic ${btoa(`${process.env.ADMIN_USER || 'squadfinders'}:${process.env.ADMIN_PASS || 'some-secure-password'}`)}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        const messagesResponse = await fetch('/api/dashboard/messages-over-time?days=30');
         const messagesData = await messagesResponse.json();
         setMessagesOverTime(messagesData);
 
         // Fetch platform distribution
-        const platformResponse = await fetch('/api/dashboard/platform-distribution', {
-          headers: {
-            'Authorization': `Basic ${btoa(`${process.env.ADMIN_USER || 'squadfinders'}:${process.env.ADMIN_PASS || 'some-secure-password'}`)}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        const platformResponse = await fetch('/api/dashboard/platform-distribution');
         const platformData = await platformResponse.json();
         setPlatformDistribution(platformData);
 
@@ -76,9 +61,11 @@ const Dashboard = () => {
         <StatBox title="Total Players" value={stats?.players || 0} color="#667eea" />
         <StatBox title="Total Messages" value={stats?.messages || 0} color="#764ba2" />
         <StatBox title="Admin Users" value={stats?.adminUsers || 0} color="#f093fb" />
+        <StatBox title="AI Responses" value={stats?.aiResponses || 0} color="#4facfe" />
         <StatBox title="Active Players" value={stats?.activePlayers || 0} color="#4facfe" />
         <StatBox title="PC Players" value={stats?.pcPlayers || 0} color="#00f2fe" />
         <StatBox title="Console Players" value={stats?.consolePlayers || 0} color="#43e97b" />
+        <StatBox title="LFG Responses" value={stats?.lfgResponses || 0} color="#a8edea" />
       </div>
 
       {/* Charts Section */}

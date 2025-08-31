@@ -1,6 +1,6 @@
 import AdminJS from 'adminjs';
 import * as AdminJSMongoose from '@adminjs/mongoose';
-import { Player, Message, AdminUser } from '../models/index.js';
+import { Player, Message, AdminUser, AIResponse } from '../models/index.js';
 import { componentLoader } from './componentLoader.js';
 
 // Register AdminJS Mongoose adapter
@@ -102,6 +102,32 @@ export const adminJS = new AdminJS({
           'sender.username',
           'sender.name',
           'message',
+          'createdAt',
+          'updatedAt'
+        ]
+      }
+    },
+    {
+      resource: AIResponse,
+      options: {
+        perPage: 100,
+        actions: viewerRole,
+        listProperties: [
+          'message_id',
+          'is_lfg',
+          'reason',
+          'createdAt'
+        ],
+        filterProperties: [
+          'is_lfg',
+          'message_id',
+          'createdAt'
+        ],
+        showProperties: [
+          'message_id',
+          'message',
+          'is_lfg',
+          'reason',
           'createdAt',
           'updatedAt'
         ]
