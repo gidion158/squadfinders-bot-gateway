@@ -15,21 +15,8 @@ import { AdminUser } from './models/index.js';
 // Initialize Express app
 const app = express();
 
-// Middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
-
 // Connect to database
 await connectDatabase();
-
-// API Routes
-app.use('/api', apiRoutes);
-
-// Swagger Documentation
-app.use('/docs', authMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'SquadFinders API Documentation'
-}));
 
 // AdminJS Authentication
 const adminRouter = AdminJSExpress.buildAuthenticatedRouter(adminJS, {
@@ -46,11 +33,26 @@ const adminRouter = AdminJSExpress.buildAuthenticatedRouter(adminJS, {
     }
   },
   cookieName: config.cookie.name,
-  cookiePassword: config.cookie.secret
+  cookiePassword: config.cookie.secret,
+  resave: false,
+  saveUninitialized: false
 });
 
 // Mount AdminJS
 app.use(adminJS.options.rootPath, adminRouter);
+
+// Middleware (MUST come after AdminJS)
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// API Routes
+app.use('/api', apiRoutes);
+
+// Swagger Documentation
+app.use('/docs', authMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'SquadFinders API Documentation'
+}));
 
 // Root route
 app.get('/', (req, res) => {

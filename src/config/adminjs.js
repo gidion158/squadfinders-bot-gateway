@@ -1,6 +1,7 @@
 import AdminJS from 'adminjs';
 import * as AdminJSMongoose from '@adminjs/mongoose';
 import { Player, Message, AdminUser } from '../models/index.js';
+import { componentLoader } from './componentLoader.js';
 
 // Register AdminJS Mongoose adapter
 AdminJS.registerAdapter(AdminJSMongoose);
@@ -27,6 +28,10 @@ const adminRole = {
 };
 
 export const adminJS = new AdminJS({
+  componentLoader,
+  dashboard: {
+    component: componentLoader.add('Dashboard', '../components/Dashboard')
+  },
   resources: [
     {
       resource: Player,
