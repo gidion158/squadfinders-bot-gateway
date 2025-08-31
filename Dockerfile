@@ -1,5 +1,5 @@
 # Use the official Node.js LTS image
-FROM node:20-alpine
+FROM arepo.kasbinozone.ir/node:20-alpine
 
 # Set working directory
 WORKDIR /app
@@ -15,13 +15,13 @@ COPY src/ ./src/
 COPY .env* ./
 
 # Create non-root user for security
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+#RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 # Change ownership of the app directory
-RUN chown -R appuser:appgroup /app
+#RUN chown -R appuser:appgroup /app
 
 # Switch to non-root user
-USER appuser
+#USER appuser
 
 # Expose port
 EXPOSE 3000

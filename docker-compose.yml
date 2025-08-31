@@ -10,5 +10,7 @@ services:
       - PROXY_PASS=true # proxy pass with nginx
     restart: unless-stopped
     networks:
-      - playerfinder
+      - nginx
 
+networks:
+  nginx:

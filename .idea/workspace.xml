@@ -4,9 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b2ea3cb0-b682-4baf-b999-e22c9c38c51d" name="Changes" comment="">
+    <list default="true" id="b2ea3cb0-b682-4baf-b999-e22c9c38c51d" name="Changes" comment="changes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/server.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server.js" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,7 +33,7 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/amofogh/squadfinders-bot-gateway.git&quot;,
+    &quot;url&quot;: &quot;https://github.com/amofogh/squadfinders-bot-gateway&quot;,
     &quot;accountId&quot;: &quot;f70fc1f7-0519-4505-89a4-54f732ea3be5&quot;
   }
 }</component>
@@ -72,7 +74,7 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration name="server.js" type="NodeJSConfigurationType" nameIsGenerated="true" path-to-js-file="server.js" working-dir="$PROJECT_DIR$">
+    <configuration name="server.js" type="NodeJSConfigurationType" nameIsGenerated="true" path-to-js-file="src/server.js" working-dir="$PROJECT_DIR$">
       <method v="2" />
     </configuration>
   </component>
@@ -98,6 +100,8 @@
       <workItem from="1755502898178" duration="2368000" />
       <workItem from="1755549151163" duration="607000" />
       <workItem from="1755582915079" duration="5728000" />
+      <workItem from="1756664968470" duration="728000" />
+      <workItem from="1756665746177" duration="2529000" />
     </task>
     <task id="LOCAL-00001" summary="feat (): files">
       <option name="closed" value="true" />
@@ -131,7 +135,15 @@
       <option name="project" value="LOCAL" />
       <updated>1755596019135</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="changes">
+      <option name="closed" value="true" />
+      <created>1756666305300</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1756666305300</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -142,6 +154,7 @@
     <MESSAGE value="feat (): proxy pass with nginx" />
     <MESSAGE value="fix (): fix api's" />
     <MESSAGE value="feat (): add messages model and view" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat (): add messages model and view" />
+    <MESSAGE value="changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="changes" />
   </component>
 </project>
