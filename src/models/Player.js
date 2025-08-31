@@ -15,12 +15,7 @@ const PlayerSchema = new mongoose.Schema({
   sender: {
     id: { type: String, default: null },
     username: { type: String, default: null },
-    name: { type: String, default: null },
-    gender: {
-      type: String,
-      enum: ['unknown', 'male', 'female', 'other'],
-      default: 'unknown'
-    }
+    name: { type: String, default: null }
   },
   group: {
     group_id: { type: String, default: null },
@@ -33,8 +28,8 @@ const PlayerSchema = new mongoose.Schema({
     enum: ['PC', 'Console', 'unknown'],
     default: 'unknown'
   },
-  rank: { type: String, default: null },
-  players_count: { type: Number, default: null },
+  rank: { type: String, default: 'unknown' },
+  players_count: { type: Number, default: 0 },
   game_mode: { type: String, default: 'unknown' },
   active: { type: Boolean, default: false }
 }, {
@@ -47,6 +42,5 @@ PlayerSchema.index({ 'group.group_id': 1, message_id: 1 }, { unique: true });
 // Additional indexes for better query performance
 PlayerSchema.index({ platform: 1 });
 PlayerSchema.index({ active: 1 });
-PlayerSchema.index({ 'sender.gender': 1 });
 
 export const Player = mongoose.model('Player', PlayerSchema);

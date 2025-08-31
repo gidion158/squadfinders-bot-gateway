@@ -29,9 +29,6 @@ const router = express.Router();
  *               type: string
  *             name:
  *               type: string
- *             gender:
- *               type: string
- *               enum: [unknown, male, female, other]
  *         group:
  *           type: object
  *           properties:

@@ -50,7 +50,6 @@ export const adminJS = new AdminJS({
         filterProperties: [
           'platform',
           'active',
-          'sender.gender',
           'group.group_username',
           'message_date',
           'game_mode'
@@ -65,7 +64,6 @@ export const adminJS = new AdminJS({
           'sender.id',
           'sender.username',
           'sender.name',
-          'sender.gender',
           'rank',
           'active',
           'players_count',
