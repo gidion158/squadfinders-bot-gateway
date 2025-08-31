@@ -1,7 +1,6 @@
 import AdminJS from 'adminjs';
 import * as AdminJSMongoose from '@adminjs/mongoose';
 import { Player, Message, AdminUser } from '../models/index.js';
-import { bundle } from '@adminjs/bundler';
 
 // Register AdminJS Mongoose adapter
 AdminJS.registerAdapter(AdminJSMongoose);
@@ -134,9 +133,5 @@ export const adminJS = new AdminJS({
         primary20: '#00f2fe'
       }
     }
-  },
-  dashboard: {
-    // component: AdminJS.bundle('./src/components/Dashboard')
-    component: bundle('./src/components/Dashboard')
   }
 });
