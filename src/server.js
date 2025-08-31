@@ -58,11 +58,14 @@ app.use('/docs', authMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 app.get('/', (req, res) => {
   res.json({
     message: 'SquadFinders Bot Gateway API',
+    version: '1.0.0',
+    status: 'running',
     endpoints: {
       admin: `${req.protocol}://${req.get('host')}/admin`,
       api: `${req.protocol}://${req.get('host')}/api`,
       docs: `${req.protocol}://${req.get('host')}/docs`
-    }
+    },
+    note: 'API endpoints require basic authentication'
   });
 });
 
