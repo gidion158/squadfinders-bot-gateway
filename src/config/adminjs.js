@@ -44,7 +44,7 @@ export const adminJS = new AdminJS({
         },
         listProperties: [
           'message_date',
-          'platform', 
+          'platform',
           'group.group_title',
           'sender.username',
           'players_count',
@@ -127,6 +127,7 @@ export const adminJS = new AdminJS({
         },
         listProperties: [
           'message_id',
+          'message',
           'is_lfg',
           'reason',
           'createdAt'
