@@ -33,6 +33,29 @@ export const messageController = {
     });
   }),
 
+  // Get valid messages since a specific timestamp
+  getValidSince: handleAsyncError(async (req, res) => {
+    const { timestamp } = req.query;
+
+    if (!timestamp) {
+      return res.status(400).json({ error: 'Timestamp query parameter is required.' });
+    }
+
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) {
+      return res.status(400).json({ error: 'Invalid timestamp format. Please use ISO 8601 format.' });
+    }
+
+    const messages = await Message.find({
+      message_date: { $gte: date },
+      is_valid: true
+    }).sort({ message_date: -1 }); // Sort by most recent first
+
+    res.json({
+      data: messages
+    });
+  }),
+
   // Get message by ID or message_id
   getById: handleAsyncError(async (req, res) => {
     const { id } = req.params;
