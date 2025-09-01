@@ -4,7 +4,7 @@ const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [platformDistribution, setPlatformDistribution] = useState([]);
   const [messagesChartData, setMessagesChartData] = useState([]);
-  const [timeRange, setTimeRange] = useState('60m'); // Default to 60 minutes
+  const [timeRange, setTimeRange] = useState('15m'); // Default to 15 minutes
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -58,7 +58,7 @@ const Dashboard = () => {
     };
 
     fetchData();
-  }, [timeRange]); // Add timeRange as a dependency to re-fetch when it changes
+  }, [timeRange]); // Re-fetch when timeRange changes
 
   useEffect(() => {
     if (!loading && !error) {
@@ -129,6 +129,7 @@ const Dashboard = () => {
   };
 
   const timeButtons = [
+    { label: '5m', value: '5m' }, { label: '10m', value: '10m' }, { label: '15m', value: '15m' },
     { label: '30m', value: '30m' }, { label: '60m', value: '60m' },
     { label: '3h', value: '3h' }, { label: '6h', value: '6h' },
     { label: '12h', value: '12h' }, { label: '24h', value: '24h' },
@@ -258,11 +259,11 @@ const Dashboard = () => {
       }, [
         React.createElement('div', {
           key: 'chart-header',
-          style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap' }
+          style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }
         }, [
           React.createElement('h3', {
             key: 'title',
-            style: { color: '#333', fontSize: '18px', fontWeight: '600' }
+            style: { color: '#333', fontSize: '18px', fontWeight: '600', margin: 0 }
           }, 'Messages Over Time'),
           React.createElement('div', { key: 'buttons' }, timeButtons.map(btn => React.createElement('button', {
             key: btn.value,
@@ -385,3 +386,4 @@ const StatBox = ({ title, value, color, icon, isDecimal = false }) => {
 };
 
 export default Dashboard;
+
