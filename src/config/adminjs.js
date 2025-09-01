@@ -169,6 +169,24 @@ export const adminJS = new AdminJS({
     }
   ],
   rootPath: '/admin',
+  locale: {
+    language: 'en',
+    availableLanguages: ['en'],
+    translations: {
+      en: {
+        labels: {
+          Player: 'Player',
+          players: 'Players',
+          Message: 'Message',
+          messages: 'Messages',
+          AIResponse: 'AI Response',
+          aiResponses: 'AI Responses',
+          AdminUser: 'Admin User',
+          adminUsers: 'Admin Users'
+        }
+      }
+    }
+  },
   branding: {
     companyName: 'SquadFinders',
     logo: false,

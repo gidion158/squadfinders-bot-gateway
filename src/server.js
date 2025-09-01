@@ -34,8 +34,15 @@ const adminRouter = AdminJSExpress.buildAuthenticatedRouter(adminJS, {
   },
   cookieName: config.cookie.name,
   cookiePassword: config.cookie.secret,
+}, {
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  secret: config.cookie.secret,
+  cookie: {
+    secure: false, // Set to true in production with HTTPS
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
 });
 
 // Mount AdminJS
