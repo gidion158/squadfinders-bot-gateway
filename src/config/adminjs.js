@@ -2,6 +2,7 @@ import AdminJS from 'adminjs';
 import * as AdminJSMongoose from '@adminjs/mongoose';
 import { Player, Message, AdminUser, AIResponse } from '../models/index.js';
 import { componentLoader } from './componentLoader.js';
+import { componentLoader } from './componentLoader.js';
 
 // Register AdminJS Mongoose adapter
 AdminJS.registerAdapter(AdminJSMongoose);
@@ -32,12 +33,20 @@ export const adminJS = new AdminJS({
   dashboard: {
     component: componentLoader.add('Dashboard', '../components/Dashboard')
   },
+  componentLoader,
+  dashboard: {
+    component: componentLoader.add('Dashboard', '../components/Dashboard')
+  },
   resources: [
     {
       resource: Player,
       options: {
         perPage: 100,
         actions: viewerRole,
+        navigation: {
+          name: 'Game Data',
+          icon: 'Users'
+        },
         listProperties: [
           'message_date',
           'platform', 
@@ -79,16 +88,22 @@ export const adminJS = new AdminJS({
       options: {
         perPage: 100,
         actions: viewerRole,
+        navigation: {
+          name: 'Game Data',
+          icon: 'MessageSquare'
+        },
         listProperties: [
           'message_date',
           'group.group_title',
           'sender.username',
-          'message'
+          'message',
+          'is_valid'
         ],
         filterProperties: [
           'group.group_username',
           'sender.username',
-          'message_date'
+          'message_date',
+          'is_valid'
         ],
         showProperties: [
           'message_id',
@@ -100,6 +115,37 @@ export const adminJS = new AdminJS({
           'sender.username',
           'sender.name',
           'message',
+          'is_valid',
+          'createdAt',
+          'updatedAt'
+        ]
+      }
+    },
+    {
+      resource: AIResponse,
+      options: {
+        perPage: 100,
+        actions: viewerRole,
+        navigation: {
+          name: 'AI Analysis',
+          icon: 'Brain'
+        },
+        listProperties: [
+          'message_id',
+          'is_lfg',
+          'reason',
+          'createdAt'
+        ],
+        filterProperties: [
+          'is_lfg',
+          'message_id',
+          'createdAt'
+        ],
+        showProperties: [
+          'message_id',
+          'message',
+          'is_lfg',
+          'reason',
           'createdAt',
           'updatedAt'
         ]
@@ -136,6 +182,10 @@ export const adminJS = new AdminJS({
       options: {
         perPage: 100,
         actions: adminRole,
+        navigation: {
+          name: 'Administration',
+          icon: 'Shield'
+        },
         properties: {
           password: {
             isVisible: {

@@ -5,12 +5,10 @@ const MessageSchema = new mongoose.Schema({
     type: Number,
     required: true,
     unique: true,
-    index: true
   },
   message_date: {
     type: Date,
     required: true,
-    index: true
   },
   sender: {
     id: { type: String, default: null },
@@ -22,7 +20,8 @@ const MessageSchema = new mongoose.Schema({
     group_title: { type: String, default: null },
     group_username: { type: String, default: null }
   },
-  message: { type: String, default: null }
+  message: { type: String, default: null },
+  is_valid: { type: Boolean, default: true }
 }, {
   timestamps: true
 });
@@ -31,6 +30,9 @@ const MessageSchema = new mongoose.Schema({
 MessageSchema.index({ 'group.group_id': 1, message_id: 1 }, { unique: true });
 
 // Additional indexes for better query performance
+MessageSchema.index({ message_id: 1 });
+MessageSchema.index({ message_date: 1 });
+MessageSchema.index({ is_valid: 1 });
 MessageSchema.index({ 'group.group_username': 1 });
 MessageSchema.index({ 'sender.username': 1 });
 

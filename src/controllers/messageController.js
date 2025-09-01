@@ -5,11 +5,12 @@ import { validateObjectId, validateMessageId } from '../utils/validators.js';
 export const messageController = {
   // Get all messages with filtering and pagination
   getAll: handleAsyncError(async (req, res) => {
-    const { page = 1, limit = 100, group_username, sender_username } = req.query;
+    const { page = 1, limit = 100, group_username, sender_username, is_valid } = req.query;
     const query = {};
     
     if (group_username) query['group.group_username'] = group_username;
     if (sender_username) query['sender.username'] = sender_username;
+    if (is_valid !== undefined) query.is_valid = is_valid === 'true';
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
     

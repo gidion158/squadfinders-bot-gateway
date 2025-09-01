@@ -11,11 +11,19 @@ export const dashboardController = {
       AIResponse.countDocuments()
     ]);
 
-    const [activePlayers, pcPlayers, consolePlayers, lfgResponses] = await Promise.all([
+    const [activePlayers, pcPlayers, consolePlayers, lfgResponses, validMessages] = await Promise.all([
       Player.countDocuments({ active: true }),
       Player.countDocuments({ platform: 'PC' }),
       Player.countDocuments({ platform: 'Console' }),
-      AIResponse.countDocuments({ is_lfg: true })
+      AIResponse.countDocuments({ is_lfg: true }),
+      Message.countDocuments({ is_valid: true })
+    ]);
+
+    // Calculate messages per minute (last hour)
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const [messagesLastHour, validMessagesLastHour] = await Promise.all([
+      Message.countDocuments({ message_date: { $gte: oneHourAgo } }),
+      Message.countDocuments({ message_date: { $gte: oneHourAgo }, is_valid: true })
     ]);
 
     res.json({
@@ -27,7 +35,10 @@ export const dashboardController = {
         activePlayers,
         pcPlayers,
         consolePlayers,
-        lfgResponses
+        lfgResponses,
+        validMessages,
+        messagesPerMinute: Math.round(messagesLastHour / 60 * 100) / 100,
+        validMessagesPerMinute: Math.round(validMessagesLastHour / 60 * 100) / 100
       }
     });
   }),

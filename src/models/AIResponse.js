@@ -5,7 +5,6 @@ const AIResponseSchema = new mongoose.Schema({
     type: Number,
     required: true,
     unique: true,
-    index: true
   },
   message: {
     type: String,
@@ -24,7 +23,7 @@ const AIResponseSchema = new mongoose.Schema({
 });
 
 // Additional indexes for better query performance
-AIResponseSchema.index({ is_lfg: 1 });
 AIResponseSchema.index({ message_id: 1 });
+AIResponseSchema.index({ is_lfg: 1 });
 
 export const AIResponse = mongoose.model('AIResponse', AIResponseSchema);

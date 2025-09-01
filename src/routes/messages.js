@@ -40,6 +40,9 @@ const router = express.Router();
  *               type: string
  *         message:
  *           type: string
+ *         is_valid:
+ *           type: boolean
+ *           default: true
  */
 
 /**
