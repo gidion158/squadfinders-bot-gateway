@@ -21,7 +21,7 @@ const MessageSchema = new mongoose.Schema({
     group_username: { type: String, default: null }
   },
   message: { type: String, default: null },
-  is_valid: { type: Boolean, default: true }
+  is_valid: { type: Boolean, default: false }
 }, {
   timestamps: true
 });
