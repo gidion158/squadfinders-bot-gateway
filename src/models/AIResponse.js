@@ -23,7 +23,7 @@ const AIResponseSchema = new mongoose.Schema({
 });
 
 // Additional indexes for better query performance
-AIResponseSchema.index({ message_id: 1 });
+// AIResponseSchema.index({ message_id: 1 });
 AIResponseSchema.index({ is_lfg: 1 });
 
 export const AIResponse = mongoose.model('AIResponse', AIResponseSchema);
