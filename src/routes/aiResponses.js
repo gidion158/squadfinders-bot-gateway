@@ -22,7 +22,6 @@ const router = express.Router();
  *         is_lfg:
  *           type: boolean
  *           description: Whether this is a looking for group message
- *           default: false
  *         reason:
  *           type: string
  *           description: Reason for the AI classification
