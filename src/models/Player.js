@@ -38,7 +38,7 @@ const PlayerSchema = new mongoose.Schema({
 PlayerSchema.index({ 'group.group_id': 1, message_id: 1 }, { unique: true });
 
 // Additional indexes for better query performance
-PlayerSchema.index({ message_id: 1 });
+// PlayerSchema.index({ message_id: 1 });
 PlayerSchema.index({ message_date: 1 });
 PlayerSchema.index({ platform: 1 });
 PlayerSchema.index({ active: 1 });

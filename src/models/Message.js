@@ -30,7 +30,7 @@ const MessageSchema = new mongoose.Schema({
 MessageSchema.index({ 'group.group_id': 1, message_id: 1 }, { unique: true });
 
 // Additional indexes for better query performance
-MessageSchema.index({ message_id: 1 });
+// MessageSchema.index({ message_id: 1 });
 MessageSchema.index({ message_date: 1 });
 MessageSchema.index({ is_valid: 1 });
 MessageSchema.index({ 'group.group_username': 1 });
