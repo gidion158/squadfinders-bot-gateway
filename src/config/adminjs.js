@@ -2,7 +2,6 @@ import AdminJS from 'adminjs';
 import * as AdminJSMongoose from '@adminjs/mongoose';
 import { Player, Message, AdminUser, AIResponse } from '../models/index.js';
 import { componentLoader } from './componentLoader.js';
-import { componentLoader } from './componentLoader.js';
 
 // Register AdminJS Mongoose adapter
 AdminJS.registerAdapter(AdminJSMongoose);
