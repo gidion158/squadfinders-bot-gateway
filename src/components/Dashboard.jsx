@@ -5,6 +5,7 @@ const Dashboard = () => {
   const [platformDistribution, setPlatformDistribution] = useState([]);
   const [messagesChartData, setMessagesChartData] = useState([]);
   const [timeRange, setTimeRange] = useState('15m'); // Default to 15 minutes
+  const [messagesChartInstance, setMessagesChartInstance] = useState(null); // To hold the chart instance
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -46,8 +47,8 @@ const Dashboard = () => {
         setPlatformDistribution(platformData);
 
         if (!messagesChartResponse.ok) throw new Error('Failed to fetch messages chart data');
-        const messagesChartData = await messagesChartResponse.json();
-        setMessagesChartData(messagesChartData);
+        const chartData = await messagesChartResponse.json();
+        setMessagesChartData(chartData);
 
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -62,18 +63,35 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!loading && !error) {
-        const loadChartJS = () => {
-            if (window.Chart) {
-                createCharts();
-                return;
-            }
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js';
-            script.onload = () => setTimeout(createCharts, 100);
-            script.onerror = () => setError('Failed to load charts library');
-            document.head.appendChild(script);
-        };
-        loadChartJS();
+      const loadScript = (src, onLoad) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = onLoad;
+        script.onerror = () => setError(`Failed to load script: ${src}`);
+        document.head.appendChild(script);
+        return script;
+      };
+
+      const loadChartScripts = () => {
+        if (window.Chart && window.Chart.Zoom && window.Chart._adapters) {
+          createCharts();
+          return;
+        }
+
+        loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js', () => {
+          loadScript('https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js', () => {
+            loadScript('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js', () => {
+              // Ensure plugins are registered
+              if (window.Chart && window.ChartZoom) {
+                window.Chart.register(window.ChartZoom);
+              }
+              setTimeout(createCharts, 100);
+            });
+          });
+        });
+      };
+
+      loadChartScripts();
     }
   }, [loading, error, messagesChartData, platformDistribution]);
 
@@ -101,30 +119,70 @@ const Dashboard = () => {
     }
 
     const messagesCtx = document.getElementById('messagesChart');
-    if (messagesCtx && messagesChartData.length > 0) {
-        new window.Chart(messagesCtx, {
-            type: 'line',
-            data: {
-                labels: messagesChartData.map(item => new Date(item.date).toLocaleString()),
-                datasets: [{
-                    label: 'Total Messages',
-                    data: messagesChartData.map(item => item.totalCount),
-                    borderColor: '#4facfe',
-                    backgroundColor: 'rgba(79, 172, 254, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                },
-                {
-                    label: 'Valid Messages',
-                    data: messagesChartData.map(item => item.validCount),
-                    borderColor: '#43e97b',
-                    backgroundColor: 'rgba(67, 233, 123, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
+    if (messagesCtx && messagesChartData) {
+      const newChartInstance = new window.Chart(messagesCtx, {
+        type: 'line',
+        data: {
+          datasets: [{
+            label: 'Total Messages',
+            data: messagesChartData.map(item => ({ x: new Date(item.date), y: item.totalCount })),
+            borderColor: '#4facfe',
+            backgroundColor: 'rgba(79, 172, 254, 0.1)',
+            tension: 0.4,
+            fill: true
+          }, {
+            label: 'Valid Messages',
+            data: messagesChartData.map(item => ({ x: new Date(item.date), y: item.validCount })),
+            borderColor: '#43e97b',
+            backgroundColor: 'rgba(67, 233, 123, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              type: 'time',
+              time: {
+                tooltipFormat: 'PP pp'
+              },
+              title: {
+                display: true,
+                text: 'Date'
+              }
             },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
-        });
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Count'
+              }
+            }
+          },
+          plugins: {
+            zoom: {
+              pan: {
+                enabled: true,
+                mode: 'x',
+              },
+              zoom: {
+                wheel: { enabled: true },
+                pinch: { enabled: true },
+                mode: 'x',
+                drag: {
+                  enabled: true,
+                  backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                  borderColor: '#667eea',
+                  borderWidth: 1
+                }
+              }
+            }
+          }
+        }
+      });
+      setMessagesChartInstance(newChartInstance);
     }
   };
 
@@ -139,96 +197,25 @@ const Dashboard = () => {
   ];
 
   if (loading) {
-    return React.createElement('div', {
-      style: {
-        padding: '40px',
-        textAlign: 'center',
-        backgroundColor: '#f8f9fa',
-        minHeight: '400px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }
-    }, [
+    return React.createElement('div', { style: { padding: '40px', textAlign: 'center', backgroundColor: '#f8f9fa', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}, [
       React.createElement('div', { key: 'loader' }, [
-        React.createElement('div', {
-          key: 'spinner',
-          style: {
-            width: '40px',
-            height: '40px',
-            border: '4px solid #f3f3f3',
-            borderTop: '4px solid #667eea',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 20px'
-          }
-        }),
-        React.createElement('h2', {
-          key: 'text',
-          style: { color: '#666', margin: 0 }
-        }, 'Loading Dashboard...')
+        React.createElement('div', { key: 'spinner', style: { width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #667eea', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' }}),
+        React.createElement('h2', { key: 'text', style: { color: '#666', margin: 0 }}, 'Loading Dashboard...')
       ])
     ]);
   }
 
   if (error) {
-    return React.createElement('div', {
-      style: {
-        padding: '40px',
-        textAlign: 'center',
-        backgroundColor: '#fff5f5',
-        border: '1px solid #fed7d7',
-        borderRadius: '8px',
-        margin: '20px',
-        color: '#c53030'
-      }
-    }, [
-      React.createElement('h2', {
-        key: 'title',
-        style: { marginBottom: '10px' }
-      }, 'Dashboard Error'),
-      React.createElement('p', {
-        key: 'message',
-        style: { margin: 0 }
-      }, error)
+    return React.createElement('div', { style: { padding: '40px', textAlign: 'center', backgroundColor: '#fff5f5', border: '1px solid #fed7d7', borderRadius: '8px', margin: '20px', color: '#c53030'}}, [
+      React.createElement('h2', { key: 'title', style: { marginBottom: '10px' }}, 'Dashboard Error'),
+      React.createElement('p', { key: 'message', style: { margin: 0 }}, error)
     ]);
   }
 
-  return React.createElement('div', {
-    style: {
-      padding: '20px',
-      backgroundColor: '#f8f9fa',
-      minHeight: '100vh'
-    }
-  }, [
-    React.createElement('style', {
-      key: 'styles'
-    }, `
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-    `),
-
-    React.createElement('h1', {
-      key: 'title',
-      style: {
-        marginBottom: '30px',
-        color: '#333',
-        fontSize: '28px',
-        fontWeight: 'bold'
-      }
-    }, 'SquadFinders Dashboard'),
-
-    React.createElement('div', {
-      key: 'stats',
-      style: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-        gap: '20px',
-        marginBottom: '40px'
-      }
-    }, [
+  return React.createElement('div', { style: { padding: '20px', backgroundColor: '#f8f9fa', minHeight: '100vh' }}, [
+    React.createElement('style', { key: 'styles' }, `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`),
+    React.createElement('h1', { key: 'title', style: { marginBottom: '30px', color: '#333', fontSize: '28px', fontWeight: 'bold' }}, 'SquadFinders Dashboard'),
+    React.createElement('div', { key: 'stats', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '40px' }}, [
       React.createElement(StatBox, { key: 'players', title: 'Total Players', value: stats?.players || 0, color: '#667eea', icon: '👥' }),
       React.createElement(StatBox, { key: 'messages', title: 'Total Messages', value: stats?.messages || 0, color: '#764ba2', icon: '💬' }),
       React.createElement(StatBox, { key: 'validMessages', title: 'Valid Messages', value: stats?.validMessages || 0, color: '#43e97b', icon: '✅' }),
@@ -238,102 +225,46 @@ const Dashboard = () => {
       React.createElement(StatBox, { key: 'messagesPerMin', title: 'Messages/Min', value: stats?.messagesPerMinute || 0, color: '#a8edea', icon: '⚡', isDecimal: true }),
       React.createElement(StatBox, { key: 'validMessagesPerMin', title: 'Valid Msgs/Min', value: stats?.validMessagesPerMinute || 0, color: '#38ef7d', icon: '📈', isDecimal: true })
     ]),
-
-    React.createElement('div', {
-      key: 'charts',
-      style: {
-        display: 'grid',
-        gridTemplateColumns: '1fr',
-        gap: '30px'
-      }
-    }, [
-      React.createElement('div', {
-        key: 'messagesChartContainer',
-        style: {
-          backgroundColor: 'white',
-          padding: '25px',
-          borderRadius: '12px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          border: '1px solid #e2e8f0'
-        }
-      }, [
-        React.createElement('div', {
-          key: 'chart-header',
-          style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }
-        }, [
-          React.createElement('h3', {
-            key: 'title',
-            style: { color: '#333', fontSize: '18px', fontWeight: '600', margin: 0 }
-          }, 'Messages Over Time'),
-          React.createElement('div', { key: 'buttons' }, timeButtons.map(btn => React.createElement('button', {
-            key: btn.value,
-            onClick: () => setTimeRange(btn.value),
-            style: {
-              background: timeRange === btn.value ? '#667eea' : '#f8f9fa',
-              color: timeRange === btn.value ? 'white' : '#333',
-              border: '1px solid #e2e8f0',
-              padding: '8px 12px',
-              marginLeft: '5px',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: '500'
-            }
-          }, btn.label)))
+    React.createElement('div', { key: 'charts', style: { display: 'grid', gridTemplateColumns: '1fr', gap: '30px' }}, [
+      React.createElement('div', { key: 'messagesChartContainer', style: { backgroundColor: 'white', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0' }}, [
+        React.createElement('div', { key: 'chart-header', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}, [
+          React.createElement('h3', { key: 'title', style: { color: '#333', fontSize: '18px', fontWeight: '600', margin: 0 }}, 'Messages Over Time'),
+          React.createElement('div', { key: 'buttons' },
+            timeButtons.map(btn => React.createElement('button', {
+              key: btn.value,
+              onClick: () => setTimeRange(btn.value),
+              style: {
+                background: timeRange === btn.value ? '#667eea' : '#f8f9fa',
+                color: timeRange === btn.value ? 'white' : '#333',
+                border: '1px solid #e2e8f0', padding: '8px 12px', marginLeft: '5px', borderRadius: '6px', cursor: 'pointer', fontWeight: '500'
+              }
+            }, btn.label)),
+            // Reset Zoom Button
+            React.createElement('button', {
+              key: 'reset-zoom',
+              onClick: () => messagesChartInstance && messagesChartInstance.resetZoom(),
+              style: {
+                background: '#f8f9fa', color: '#333', border: '1px solid #e2e8f0', padding: '8px 12px', marginLeft: '10px', borderRadius: '6px', cursor: 'pointer', fontWeight: '500'
+              }
+            }, 'Reset Zoom')
+          )
         ]),
-        React.createElement('div', {
-          key: 'canvas-container',
-          style: { height: '350px', position: 'relative' }
-        }, React.createElement('canvas', {
-          id: 'messagesChart',
-          style: { width: '100%', height: '100%' }
-        }))
+        React.createElement('div', { key: 'canvas-container', style: { height: '350px', position: 'relative' }}, React.createElement('canvas', { id: 'messagesChart', style: { width: '100%', height: '100%' } }))
       ]),
-      React.createElement('div', {
-        key: 'platformChartContainer',
-        style: {
-          backgroundColor: 'white',
-          padding: '25px',
-          borderRadius: '12px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          border: '1px solid #e2e8f0'
-        }
-      }, [
-        React.createElement('h3', {
-          key: 'title',
-          style: {
-            marginBottom: '20px',
-            color: '#333',
-            fontSize: '18px',
-            fontWeight: '600'
-          }
-        }, 'Platform Distribution'),
-        React.createElement('div', {
-          key: 'canvas-container',
-          style: { height: '350px', position: 'relative' }
-        }, React.createElement('canvas', {
-          id: 'platformChart',
-          style: { width: '100%', height: '100%' }
-        }))
+      React.createElement('div', { key: 'platformChartContainer', style: { backgroundColor: 'white', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0' }}, [
+        React.createElement('h3', { key: 'title', style: { marginBottom: '20px', color: '#333', fontSize: '18px', fontWeight: '600' }}, 'Platform Distribution'),
+        React.createElement('div', { key: 'canvas-container', style: { height: '350px', position: 'relative' }}, React.createElement('canvas', { id: 'platformChart', style: { width: '100%', height: '100%' } }))
       ])
     ])
   ]);
 };
 
 const StatBox = ({ title, value, color, icon, isDecimal = false }) => {
-  const displayValue = isDecimal ?
-    (typeof value === 'number' ? value.toFixed(2) : value) :
-    (typeof value === 'number' ? value.toLocaleString() : value);
-
+  const displayValue = isDecimal ? (typeof value === 'number' ? value.toFixed(2) : value) : (typeof value === 'number' ? value.toLocaleString() : value);
   return React.createElement('div', {
     style: {
-      backgroundColor: 'white',
-      padding: '25px',
-      borderRadius: '12px',
-      boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-      border: '1px solid #e2e8f0',
-      borderLeft: `4px solid ${color}`,
-      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-      cursor: 'default'
+      backgroundColor: 'white', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+      border: '1px solid #e2e8f0', borderLeft: `4px solid ${color}`, transition: 'transform 0.2s ease, box-shadow 0.2s ease', cursor: 'default'
     },
     onMouseEnter: (e) => {
       const target = e.currentTarget;
@@ -346,42 +277,11 @@ const StatBox = ({ title, value, color, icon, isDecimal = false }) => {
       target.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
     }
   }, [
-    React.createElement('div', {
-      key: 'header',
-      style: {
-        display: 'flex',
-        alignItems: 'center',
-        marginBottom: '15px'
-      }
-    }, [
-      React.createElement('span', {
-        key: 'icon',
-        style: {
-          fontSize: '24px',
-          marginRight: '10px'
-        }
-      }, icon),
-      React.createElement('h3', {
-        key: 'title',
-        style: {
-          margin: 0,
-          fontSize: '14px',
-          color: '#666',
-          textTransform: 'uppercase',
-          fontWeight: '600',
-          letterSpacing: '0.5px'
-        }
-      }, title)
+    React.createElement('div', { key: 'header', style: { display: 'flex', alignItems: 'center', marginBottom: '15px' }}, [
+      React.createElement('span', { key: 'icon', style: { fontSize: '24px', marginRight: '10px' }}, icon),
+      React.createElement('h3', { key: 'title', style: { margin: 0, fontSize: '14px', color: '#666', textTransform: 'uppercase', fontWeight: '600', letterSpacing: '0.5px' }}, title)
     ]),
-    React.createElement('div', {
-      key: 'value',
-      style: {
-        fontSize: '32px',
-        fontWeight: 'bold',
-        color: color,
-        lineHeight: '1'
-      }
-    }, displayValue)
+    React.createElement('div', { key: 'value', style: { fontSize: '32px', fontWeight: 'bold', color: color, lineHeight: '1' }}, displayValue)
   ]);
 };
 
