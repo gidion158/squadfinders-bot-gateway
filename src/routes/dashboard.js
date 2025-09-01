@@ -1,6 +1,6 @@
 import express from 'express';
-import { dashboardController } from '../controllers/dashboardController.js';
-import { authMiddleware } from '../middleware/auth.js';
+import {dashboardController} from '../controllers/dashboardController.js';
+import {authMiddleware} from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -51,5 +51,26 @@ router.get('/messages-over-time', authMiddleware, dashboardController.getMessage
  *         description: Player count by platform
  */
 router.get('/platform-distribution', authMiddleware, dashboardController.getPlatformDistribution);
+// Add this new route to your dashboard.js file
+
+/**
+ * @swagger
+ * /api/dashboard/messages-per-minute-over-time:
+ * get:
+ * summary: Get messages per minute over time for charts
+ * tags: [Dashboard]
+ * security:
+ * - basicAuth: []
+ * parameters:
+ * - in: query
+ * name: minutes
+ * schema:
+ * type: integer
+ * default: 60
+ * responses:
+ * 200:
+ * description: Messages count per minute grouped by date
+ */
+router.get('/messages-per-minute-over-time', authMiddleware, dashboardController.getMessagesPerMinuteOverTime);
 
 export default router;

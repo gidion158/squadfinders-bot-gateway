@@ -90,5 +90,45 @@ export const dashboardController = {
     ]);
 
     res.json(distribution);
-  })
+  }),
+
+  // Get messages per minute over time for charts
+  getMessagesPerMinuteOverTime: handleAsyncError(async (req, res) => {
+    const { minutes = 60 } = req.query;
+    const startDate = new Date(Date.now() - parseInt(minutes) * 60 * 1000);
+
+    const messages = await Message.aggregate([
+      {
+        $match: {
+          message_date: { $gte: startDate }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$message_date' },
+            month: { $month: '$message_date' },
+            day: { $dayOfMonth: '$message_date' },
+            hour: { $hour: '$message_date' },
+            minute: { $minute: '$message_date' }
+          },
+          totalMessages: { $sum: 1 },
+          validMessages: {
+            $sum: { $cond: ['$is_valid', 1, 0] }
+          }
+        }
+      },
+      {
+        $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1, '_id.hour': 1, '_id.minute': 1 }
+      }
+    ]);
+
+    const formattedData = messages.map(item => ({
+      date: new Date(item._id.year, item._id.month - 1, item._id.day, item._id.hour, item._id.minute),
+      totalCount: item.totalMessages,
+      validCount: item.validMessages,
+    }));
+
+    res.json(formattedData);
+  }),
 };
