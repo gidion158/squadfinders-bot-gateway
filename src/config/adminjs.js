@@ -33,10 +33,6 @@ export const adminJS = new AdminJS({
   dashboard: {
     component: componentLoader.add('Dashboard', '../components/Dashboard')
   },
-  componentLoader,
-  dashboard: {
-    component: componentLoader.add('Dashboard', '../components/Dashboard')
-  },
   resources: [
     {
       resource: Player,
