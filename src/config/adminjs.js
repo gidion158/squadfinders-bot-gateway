@@ -147,32 +147,6 @@ export const adminJS = new AdminJS({
       }
     },
     {
-      resource: AIResponse,
-      options: {
-        perPage: 100,
-        actions: viewerRole,
-        listProperties: [
-          'message_id',
-          'is_lfg',
-          'reason',
-          'createdAt'
-        ],
-        filterProperties: [
-          'is_lfg',
-          'message_id',
-          'createdAt'
-        ],
-        showProperties: [
-          'message_id',
-          'message',
-          'is_lfg',
-          'reason',
-          'createdAt',
-          'updatedAt'
-        ]
-      }
-    },
-    {
       resource: AdminUser,
       options: {
         perPage: 100,
