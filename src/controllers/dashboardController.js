@@ -1,6 +1,34 @@
 import { Player, Message, AdminUser, AIResponse } from '../models/index.js';
 import { handleAsyncError } from '../utils/errorHandler.js';
 
+// Helper function to parse timeframe string (e.g., '60m', '12h', '7d')
+const parseTimeframe = (timeframe) => {
+  const unit = timeframe.slice(-1);
+  const value = parseInt(timeframe.slice(0, -1));
+  let milliseconds;
+
+  switch (unit) {
+    case 'm':
+      milliseconds = value * 60 * 1000;
+      break;
+    case 'h':
+      milliseconds = value * 60 * 60 * 1000;
+      break;
+    case 'd':
+      milliseconds = value * 24 * 60 * 60 * 1000;
+      break;
+    case 'y':
+      milliseconds = value * 365 * 24 * 60 * 60 * 1000;
+      break;
+    default: // Assume months if not specified (e.g., '1mo', '3mo')
+      milliseconds = value * 30 * 24 * 60 * 60 * 1000;
+      break;
+  }
+
+  return new Date(Date.now() - milliseconds);
+};
+
+
 export const dashboardController = {
   // Get dashboard statistics
   getStats: handleAsyncError(async (req, res) => {
@@ -43,40 +71,62 @@ export const dashboardController = {
     });
   }),
 
-  // Get messages over time for charts
-  getMessagesOverTime: handleAsyncError(async (req, res) => {
-    const { days = 30 } = req.query;
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - parseInt(days));
+  // Get messages over time for charts - THIS REPLACES the previous two functions
+  getMessagesChartData: handleAsyncError(async (req, res) => {
+    const { timeframe = '60m' } = req.query;
+    const startDate = parseTimeframe(timeframe);
 
-    const messagesOverTime = await Message.aggregate([
+    // Determine the appropriate grouping based on the timeframe
+    let groupBy = {
+        year: { $year: '$message_date' },
+        month: { $month: '$message_date' },
+        day: { $dayOfMonth: '$message_date' },
+        hour: { $hour: '$message_date' },
+        minute: { $minute: '$message_date' },
+    };
+
+    const durationInDays = (Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+
+    if (durationInDays > 30) { // If more than a month, group by day
+      delete groupBy.hour;
+      delete groupBy.minute;
+    } else if (durationInDays > 2) { // If more than 2 days, group by hour
+      delete groupBy.minute;
+    }
+
+    const messages = await Message.aggregate([
       {
-        $match: {
-          message_date: { $gte: startDate }
-        }
+        $match: { message_date: { $gte: startDate } }
       },
       {
         $group: {
-          _id: {
-            year: { $year: '$message_date' },
-            month: { $month: '$message_date' },
-            day: { $dayOfMonth: '$message_date' }
-          },
-          count: { $sum: 1 }
+          _id: groupBy,
+          totalMessages: { $sum: 1 },
+          validMessages: {
+            $sum: { $cond: ['$is_valid', 1, 0] }
+          }
         }
       },
       {
-        $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 }
+        $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1, '_id.hour': 1, '_id.minute': 1 }
       }
     ]);
 
-    const formattedData = messagesOverTime.map(item => ({
-      date: new Date(item._id.year, item._id.month - 1, item._id.day),
-      count: item.count
+    const formattedData = messages.map(item => ({
+      date: new Date(
+        item._id.year,
+        item._id.month - 1,
+        item._id.day,
+        item._id.hour || 0,
+        item._id.minute || 0
+      ).toISOString(),
+      totalCount: item.totalMessages,
+      validCount: item.validMessages,
     }));
 
     res.json(formattedData);
   }),
+
 
   // Get platform distribution
   getPlatformDistribution: handleAsyncError(async (req, res) => {
@@ -90,45 +140,5 @@ export const dashboardController = {
     ]);
 
     res.json(distribution);
-  }),
-
-  // Get messages per minute over time for charts
-  getMessagesPerMinuteOverTime: handleAsyncError(async (req, res) => {
-    const { minutes = 60 } = req.query;
-    const startDate = new Date(Date.now() - parseInt(minutes) * 60 * 1000);
-
-    const messages = await Message.aggregate([
-      {
-        $match: {
-          message_date: { $gte: startDate }
-        }
-      },
-      {
-        $group: {
-          _id: {
-            year: { $year: '$message_date' },
-            month: { $month: '$message_date' },
-            day: { $dayOfMonth: '$message_date' },
-            hour: { $hour: '$message_date' },
-            minute: { $minute: '$message_date' }
-          },
-          totalMessages: { $sum: 1 },
-          validMessages: {
-            $sum: { $cond: ['$is_valid', 1, 0] }
-          }
-        }
-      },
-      {
-        $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1, '_id.hour': 1, '_id.minute': 1 }
-      }
-    ]);
-
-    const formattedData = messages.map(item => ({
-      date: new Date(item._id.year, item._id.month - 1, item._id.day, item._id.hour, item._id.minute),
-      totalCount: item.totalMessages,
-      validCount: item.validMessages,
-    }));
-
-    res.json(formattedData);
   }),
 };
