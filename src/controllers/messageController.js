@@ -5,12 +5,14 @@ import { validateObjectId, validateMessageId } from '../utils/validators.js';
 export const messageController = {
   // Get all messages with filtering and pagination
   getAll: handleAsyncError(async (req, res) => {
-    const { page = 1, limit = 100, group_username, sender_username, is_valid } = req.query;
+    const { page = 1, limit = 100, group_username, sender_username, is_valid, is_lfg, ai_status } = req.query;
     const query = {};
     
     if (group_username) query['group.group_username'] = group_username;
     if (sender_username) query['sender.username'] = sender_username;
     if (is_valid !== undefined) query.is_valid = is_valid === 'true';
+    if (is_lfg !== undefined) query.is_lfg = is_lfg === 'true';
+    if (ai_status) query.ai_status = ai_status;
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
     
@@ -53,6 +55,54 @@ export const messageController = {
 
     res.json({
       data: messages
+    });
+  }),
+
+  // Get unprocessed messages for AI processing
+  getUnprocessed: handleAsyncError(async (req, res) => {
+    const { limit = 50 } = req.query;
+    const maxLimit = Math.min(parseInt(limit), 100);
+    
+    // Messages older than 5 minutes should be expired
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    
+    // First, expire old pending messages
+    await Message.updateMany(
+      {
+        ai_status: 'pending',
+        createdAt: { $lt: fiveMinutesAgo }
+      },
+      {
+        $set: { ai_status: 'expired' }
+      }
+    );
+
+    // Get recent pending messages and mark them as processing
+    const recentPendingMessages = await Message.find({
+      is_valid: true,
+      ai_status: 'pending',
+      createdAt: { $gte: fiveMinutesAgo }
+    })
+    .sort({ createdAt: 1 }) // Oldest first
+    .limit(maxLimit);
+
+    // Mark these messages as processing
+    if (recentPendingMessages.length > 0) {
+      const messageIds = recentPendingMessages.map(msg => msg._id);
+      await Message.updateMany(
+        { _id: { $in: messageIds } },
+        { $set: { ai_status: 'processing' } }
+      );
+
+      // Update the status in the returned data
+      recentPendingMessages.forEach(msg => {
+        msg.ai_status = 'processing';
+      });
+    }
+
+    res.json({
+      data: recentPendingMessages,
+      count: recentPendingMessages.length
     });
   }),
 

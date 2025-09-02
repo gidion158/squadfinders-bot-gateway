@@ -34,5 +34,18 @@ router.get('/platform-distribution', authMiddleware, dashboardController.getPlat
 
 router.get('/messages-chart', authMiddleware, dashboardController.getMessagesChartData);
 
+/**
+ * @swagger
+ * /api/dashboard/ai-status-distribution:
+ *   get:
+ *     summary: Get AI status distribution
+ *     tags: [Dashboard]
+ *     security:
+ *       - basicAuth: []
+ *     responses:
+ *       200:
+ *         description: Message count by AI status
+ */
+router.get('/ai-status-distribution', authMiddleware, dashboardController.getAIStatusDistribution);
 
 export default router;

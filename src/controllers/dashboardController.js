@@ -1,4 +1,4 @@
-import { Player, Message, AdminUser, AIResponse } from '../models/index.js';
+import { Player, Message, AdminUser } from '../models/index.js';
 import { handleAsyncError } from '../utils/errorHandler.js';
 
 // Helper function to parse timeframe string (e.g., '60m', '12h', '7d')
@@ -28,23 +28,30 @@ const parseTimeframe = (timeframe) => {
   return new Date(Date.now() - milliseconds);
 };
 
-
 export const dashboardController = {
   // Get dashboard statistics
   getStats: handleAsyncError(async (req, res) => {
-    const [playerCount, messageCount, adminUserCount, aiResponseCount] = await Promise.all([
+    const [playerCount, messageCount, adminUserCount] = await Promise.all([
       Player.countDocuments(),
       Message.countDocuments(),
-      AdminUser.countDocuments(),
-      AIResponse.countDocuments()
+      AdminUser.countDocuments()
     ]);
 
-    const [activePlayers, pcPlayers, consolePlayers, lfgResponses, validMessages] = await Promise.all([
+    const [activePlayers, pcPlayers, consolePlayers, lfgMessages, validMessages] = await Promise.all([
       Player.countDocuments({ active: true }),
       Player.countDocuments({ platform: 'PC' }),
       Player.countDocuments({ platform: 'Console' }),
-      AIResponse.countDocuments({ is_lfg: true }),
+      Message.countDocuments({ is_lfg: true }),
       Message.countDocuments({ is_valid: true })
+    ]);
+
+    // AI Status counts
+    const [pendingMessages, processingMessages, completedMessages, failedMessages, expiredMessages] = await Promise.all([
+      Message.countDocuments({ ai_status: 'pending' }),
+      Message.countDocuments({ ai_status: 'processing' }),
+      Message.countDocuments({ ai_status: 'completed' }),
+      Message.countDocuments({ ai_status: 'failed' }),
+      Message.countDocuments({ ai_status: 'expired' })
     ]);
 
     // Calculate messages per minute (last hour)
@@ -59,19 +66,23 @@ export const dashboardController = {
         players: playerCount,
         messages: messageCount,
         adminUsers: adminUserCount,
-        aiResponses: aiResponseCount,
         activePlayers,
         pcPlayers,
         consolePlayers,
-        lfgResponses,
+        lfgMessages,
         validMessages,
+        pendingMessages,
+        processingMessages,
+        completedMessages,
+        failedMessages,
+        expiredMessages,
         messagesPerMinute: Math.round(messagesLastHour / 60 * 100) / 100,
         validMessagesPerMinute: Math.round(validMessagesLastHour / 60 * 100) / 100
       }
     });
   }),
 
-  // Get messages over time for charts - THIS REPLACES the previous two functions
+  // Get messages over time for charts
   getMessagesChartData: handleAsyncError(async (req, res) => {
     const { timeframe = '60m' } = req.query;
     const startDate = parseTimeframe(timeframe);
@@ -127,13 +138,26 @@ export const dashboardController = {
     res.json(formattedData);
   }),
 
-
   // Get platform distribution
   getPlatformDistribution: handleAsyncError(async (req, res) => {
     const distribution = await Player.aggregate([
       {
         $group: {
           _id: '$platform',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    res.json(distribution);
+  }),
+
+  // Get AI status distribution
+  getAIStatusDistribution: handleAsyncError(async (req, res) => {
+    const distribution = await Message.aggregate([
+      {
+        $group: {
+          _id: '$ai_status',
           count: { $sum: 1 }
         }
       }

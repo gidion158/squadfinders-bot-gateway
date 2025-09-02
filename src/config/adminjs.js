@@ -1,6 +1,6 @@
 import AdminJS from 'adminjs';
 import * as AdminJSMongoose from '@adminjs/mongoose';
-import { Player, Message, AdminUser, AIResponse } from '../models/index.js';
+import { Player, Message, AdminUser } from '../models/index.js';
 import { componentLoader } from './componentLoader.js';
 
 // Register AdminJS Mongoose adapter
@@ -92,13 +92,17 @@ export const adminJS = new AdminJS({
           'group.group_title',
           'sender.username',
           'message',
-          'is_valid'
+          'is_valid',
+          'is_lfg',
+          'ai_status'
         ],
         filterProperties: [
           'group.group_username',
           'sender.username',
           'message_date',
-          'is_valid'
+          'is_valid',
+          'is_lfg',
+          'ai_status'
         ],
         showProperties: [
           'message_id',
@@ -111,37 +115,9 @@ export const adminJS = new AdminJS({
           'sender.name',
           'message',
           'is_valid',
-          'createdAt',
-          'updatedAt'
-        ]
-      }
-    },
-    {
-      resource: AIResponse,
-      options: {
-        perPage: 100,
-        actions: viewerRole,
-        navigation: {
-          name: 'AI Analysis',
-          icon: 'Brain'
-        },
-        listProperties: [
-          'message_id',
-          'message',
           'is_lfg',
           'reason',
-          'createdAt'
-        ],
-        filterProperties: [
-          'is_lfg',
-          'message_id',
-          'createdAt'
-        ],
-        showProperties: [
-          'message_id',
-          'message',
-          'is_lfg',
-          'reason',
+          'ai_status',
           'createdAt',
           'updatedAt'
         ]
@@ -180,8 +156,6 @@ export const adminJS = new AdminJS({
           players: 'Players',
           Message: 'Message',
           messages: 'Messages',
-          AIResponse: 'AI Response',
-          aiResponses: 'AI Responses',
           AdminUser: 'Admin User',
           adminUsers: 'Admin Users'
         }

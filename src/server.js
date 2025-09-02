@@ -11,6 +11,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 import { authMiddleware } from './middleware/auth.js';
 import apiRoutes from './routes/index.js';
 import { AdminUser } from './models/index.js';
+import { autoExpiryService } from './services/autoExpiry.js';
 
 // Initialize Express app
 const app = express();
@@ -115,15 +116,20 @@ app.listen(PORT, () => {
   console.log(`📊 Admin Panel: ${baseUrl}/admin`);
   console.log(`🔗 API Docs: ${baseUrl}/docs`);
   console.log(`⚡ API Base: ${baseUrl}/api`);
+  
+  // Start auto-expiry service
+  autoExpiryService.start(1); // Check every 1 minute
 });
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, shutting down gracefully');
+  autoExpiryService.stop();
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
   console.log('SIGINT received, shutting down gracefully');
+  autoExpiryService.stop();
   process.exit(0);
 });
