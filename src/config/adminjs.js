@@ -30,7 +30,13 @@ const adminRole = {
 export const adminJS = new AdminJS({
   componentLoader,
   dashboard: {
-    component: componentLoader.add('Dashboard', '../components/Dashboard')
+    component: componentLoader.add('Dashboard', '../components/Dashboard'),
+    handler: async (request, response, context) => {
+      // This ensures the dashboard component has access to the current admin
+      return {
+        currentAdmin: context.currentAdmin
+      };
+    }
   },
   resources: [
     {

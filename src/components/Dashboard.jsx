@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const Dashboard = ({ currentAdmin }) => {
+const Dashboard = (props) => {
   const [stats, setStats] = useState(null);
   const [platformDistribution, setPlatformDistribution] = useState([]);
   const [aiStatusDistribution, setAIStatusDistribution] = useState([]);
@@ -9,9 +9,32 @@ const Dashboard = ({ currentAdmin }) => {
   const [messagesChartInstance, setMessagesChartInstance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [hasAccess, setHasAccess] = useState(false);
 
-  // Check if user has access to dashboard
-  const hasAccess = currentAdmin && (currentAdmin.role === 'admin' || currentAdmin.role === 'viewer');
+  // Check authentication by making a test API call
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/dashboard/stats', {
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          setHasAccess(true);
+        } else {
+          setHasAccess(false);
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        setHasAccess(false);
+      }
+    };
+    
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     if (!hasAccess) {
