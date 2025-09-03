@@ -47,7 +47,7 @@ export const dashboardController = {
 
     // AI Status counts
     const [pendingMessages, processingMessages, completedMessages, failedMessages, expiredMessages] = await Promise.all([
-      Message.countDocuments({ ai_status: 'pending' }),
+      Message.countDocuments({ ai_status: 'pending', is_valid: true }),
       Message.countDocuments({ ai_status: 'processing' }),
       Message.countDocuments({ ai_status: 'completed' }),
       Message.countDocuments({ ai_status: 'failed' }),
