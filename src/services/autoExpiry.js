@@ -48,7 +48,7 @@ export class AutoExpiryService {
         const result = await Message.updateMany(
           {
             ai_status: 'pending',
-            createdAt: { $lt: fiveMinutesAgo }
+            message_date: { $lt: fiveMinutesAgo }
           },
           {
             $set: { ai_status: 'expired' }
