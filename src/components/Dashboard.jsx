@@ -163,10 +163,19 @@ const Dashboard = (props) => {
     // AI Status Distribution Chart
     const aiStatusCtx = document.getElementById('aiStatusChart');
     if (aiStatusCtx && aiStatusDistribution.length > 0) {
+        // Map AI status values to proper labels
+        const statusLabels = {
+          'pending': 'Pending',
+          'processing': 'Processing', 
+          'completed': 'Completed',
+          'failed': 'Failed',
+          'expired': 'Expired'
+        };
+        
         new window.Chart(aiStatusCtx, {
             type: 'doughnut',
             data: {
-                labels: aiStatusDistribution.map(item => item._id || 'Unknown'),
+                labels: aiStatusDistribution.map(item => statusLabels[item._id] || item._id || 'Unknown'),
                 datasets: [{
                     data: aiStatusDistribution.map(item => item.count),
                     backgroundColor: ['#ffd93d', '#6bcf7f', '#4d96ff', '#ff6b6b', '#a8a8a8']
