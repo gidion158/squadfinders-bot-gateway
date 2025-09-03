@@ -61,6 +61,15 @@ export const dashboardController = {
       Message.countDocuments({ message_date: { $gte: oneHourAgo }, is_valid: true })
     ]);
 
+    // Calculate messages today (from 00:00 today until now)
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    
+    const [messagesToday, validMessagesToday] = await Promise.all([
+      Message.countDocuments({ message_date: { $gte: startOfToday } }),
+      Message.countDocuments({ message_date: { $gte: startOfToday }, is_valid: true })
+    ]);
+
     res.json({
       counts: {
         players: playerCount,
@@ -77,7 +86,9 @@ export const dashboardController = {
         failedMessages,
         expiredMessages,
         messagesPerMinute: Math.round(messagesLastHour / 60 * 100) / 100,
-        validMessagesPerMinute: Math.round(validMessagesLastHour / 60 * 100) / 100
+        validMessagesPerMinute: Math.round(validMessagesLastHour / 60 * 100) / 100,
+        messagesToday,
+        validMessagesToday
       }
     });
   }),

@@ -40,18 +40,32 @@ export class AutoExpiryService {
     try {
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
       
-      const result = await Message.updateMany(
-        {
-          ai_status: 'pending',
-          createdAt: { $lt: fiveMinutesAgo }
-        },
-        {
-          $set: { ai_status: 'expired' }
-        }
-      );
+      // Process in batches to handle large datasets efficiently
+      const batchSize = 1000;
+      let totalExpired = 0;
+      
+      while (true) {
+        const result = await Message.updateMany(
+          {
+            ai_status: 'pending',
+            createdAt: { $lt: fiveMinutesAgo }
+          },
+          {
+            $set: { ai_status: 'expired' }
+          },
+          { limit: batchSize }
+        );
 
-      if (result.modifiedCount > 0) {
-        console.log(`⏰ Expired ${result.modifiedCount} old pending messages`);
+        totalExpired += result.modifiedCount;
+        
+        // If we processed fewer than the batch size, we're done
+        if (result.modifiedCount < batchSize) {
+          break;
+        }
+      }
+
+      if (totalExpired > 0) {
+        console.log(`⏰ Expired ${totalExpired} old pending messages`);
       }
     } catch (error) {
       console.error('❌ Error in auto-expiry service:', error.message);
