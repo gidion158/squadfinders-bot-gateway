@@ -325,7 +325,15 @@ const Dashboard = (props) => {
                 drag: {
                   enabled: true,
                   backgroundColor: 'rgba(255, 107, 107, 0.2)',
-  };
+                  };
+              }
+            }
+          }
+        }
+      }
+      )
+    }
+  }
 
   const timeButtons = [
     { label: '5m', value: '5m' }, { label: '10m', value: '10m' }, { label: '15m', value: '15m' },
