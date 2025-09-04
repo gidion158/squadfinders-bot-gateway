@@ -55,7 +55,7 @@ const router = express.Router();
  *       200:
  *         description: List of admin users with pagination
  */
-router.get('/', authMiddleware, authorizeRole(['admin', 'viewer']), adminUserController.getAll);
+router.get('/', authMiddleware, authorizeRole(['admin']), adminUserController.getAll);
 
 /**
  * @swagger
@@ -77,7 +77,7 @@ router.get('/', authMiddleware, authorizeRole(['admin', 'viewer']), adminUserCon
  *       404:
  *         description: Admin user not found
  */
-router.get('/:id', authMiddleware, authorizeRole(['admin', 'viewer']), adminUserController.getById);
+router.get('/:id', authMiddleware, authorizeRole(['admin']), adminUserController.getById);
 
 /**
  * @swagger
