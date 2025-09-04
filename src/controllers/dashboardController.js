@@ -36,6 +36,7 @@ export const dashboardController = {
       Message.countDocuments(),
       AdminUser.countDocuments(),
       DeletedMessage.countDocuments()
+      DeletedMessage.countDocuments()
     ]);
 
     const [activePlayers, pcPlayers, consolePlayers, lfgMessages, validMessages] = await Promise.all([
@@ -66,9 +67,18 @@ export const dashboardController = {
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
     
-    const [messagesToday, validMessagesToday] = await Promise.all([
+    const [messagesToday, validMessagesToday, deletedToday, avgDeletionTime] = await Promise.all([
       Message.countDocuments({ message_date: { $gte: startOfToday } }),
-      Message.countDocuments({ message_date: { $gte: startOfToday }, is_valid: true })
+      Message.countDocuments({ message_date: { $gte: startOfToday }, is_valid: true }),
+      DeletedMessage.countDocuments({ deleted_at: { $gte: startOfToday } }),
+      DeletedMessage.aggregate([
+        {
+          $group: {
+            _id: null,
+            avgDeletionTime: { $avg: '$deletion_time_minutes' }
+          }
+        }
+      ])
     ]);
 
     // Calculate deleted messages today and average deletion time
@@ -89,6 +99,7 @@ export const dashboardController = {
         messages: messageCount,
         adminUsers: adminUserCount,
         deletedMessages: deletedMessageCount,
+        deletedMessages: deletedMessageCount,
         activePlayers,
         pcPlayers,
         consolePlayers,
@@ -103,6 +114,8 @@ export const dashboardController = {
         validMessagesPerMinute: Math.round(validMessagesLastHour / 60 * 100) / 100,
         messagesToday,
         validMessagesToday,
+        deletedToday,
+        avgDeletionTimeMinutes: Math.round((avgDeletionTime[0]?.avgDeletionTime || 0) * 100) / 100
         deletedToday,
         avgDeletionTimeMinutes: Math.round((avgDeletionTime[0]?.avgDeletionTime || 0) * 100) / 100
       }
