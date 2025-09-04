@@ -101,6 +101,17 @@ export const adminJS = new AdminJS({
           sortBy: 'createdAt',
           direction: 'desc'
         },
+        properties: {
+          ai_status: {
+            availableValues: [
+              { value: 'pending', label: 'Pending' },
+              { value: 'processing', label: 'Processing' },
+              { value: 'completed', label: 'Completed' },
+              { value: 'failed', label: 'Failed' },
+              { value: 'expired', label: 'Expired' },
+            ],
+          },
+        },
         listProperties: [
           'message_date',
           'group.group_title',
@@ -156,6 +167,17 @@ export const adminJS = new AdminJS({
         sort: {
           sortBy: 'deleted_at',
           direction: 'desc'
+        },
+        properties: {
+          ai_status: {
+            availableValues: [
+              { value: 'pending', label: 'Pending' },
+              { value: 'processing', label: 'Processing' },
+              { value: 'completed', label: 'Completed' },
+              { value: 'failed', label: 'Failed' },
+              { value: 'expired', label: 'Expired' },
+            ],
+          },
         },
         listProperties: [
           'deleted_at',
