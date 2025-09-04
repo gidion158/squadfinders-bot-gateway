@@ -325,7 +325,7 @@ const Dashboard = (props) => {
                 drag: {
                   enabled: true,
                   backgroundColor: 'rgba(255, 107, 107, 0.2)',
-                  };
+                  }
               }
             }
           }
