@@ -48,4 +48,25 @@ router.get('/messages-chart', authMiddleware, dashboardController.getMessagesCha
  */
 router.get('/ai-status-distribution', authMiddleware, dashboardController.getAIStatusDistribution);
 
+/**
+ * @swagger
+ * /api/dashboard/deleted-messages-chart:
+ *   get:
+ *     summary: Get deleted messages chart data
+ *     tags: [Dashboard]
+ *     security:
+ *       - basicAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: timeframe
+ *         schema:
+ *           type: string
+ *           default: '7d'
+ *         description: Time range for the chart (e.g., '7d', '30d', '3mo')
+ *     responses:
+ *       200:
+ *         description: Deleted messages count by day with average deletion time
+ */
+router.get('/deleted-messages-chart', authMiddleware, dashboardController.getDeletedMessagesChartData);
+
 export default router;

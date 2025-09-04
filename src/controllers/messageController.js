@@ -1,4 +1,4 @@
-import { Message } from '../models/index.js';
+import { Message, DeletedMessage } from '../models/index.js';
 import { handleAsyncError } from '../utils/errorHandler.js';
 import { validateObjectId, validateMessageId } from '../utils/validators.js';
 
@@ -121,6 +121,25 @@ export const messageController = {
       return res.status(404).json({ error: 'Message not found' });
     }
 
+    // Calculate deletion time in minutes
+    const deletionTimeMinutes = Math.round((Date.now() - message.message_date.getTime()) / (1000 * 60));
+
+    // Store deleted message for analytics
+    await DeletedMessage.create({
+      original_message_id: message.message_id,
+      message_date: message.message_date,
+      deleted_at: new Date(),
+      sender: message.sender,
+      group: message.group,
+      message: message.message,
+      is_valid: message.is_valid,
+      is_lfg: message.is_lfg,
+      reason: message.reason,
+      ai_status: message.ai_status,
+      deletion_time_minutes: deletionTimeMinutes
+    });
+
+    // Delete the original message
     res.json(message);
   }),
 
@@ -162,15 +181,17 @@ export const messageController = {
     let message;
 
     if (validateObjectId(id)) {
-      message = await Message.findByIdAndDelete(id);
+      await Message.findByIdAndDelete(id);
     } else if (validateMessageId(id)) {
-      message = await Message.findOneAndDelete({ message_id: parseInt(id, 10) });
+      await Message.findOneAndDelete({ message_id: parseInt(id, 10) });
     }
 
-    if (!message) {
-      return res.status(404).json({ error: 'Message not found' });
-    }
-
-    res.json({ message: 'Message deleted successfully' });
+    res.json({ 
+      message: 'Message deleted successfully',
+      deletion_analytics: {
+        deletion_time_minutes: deletionTimeMinutes,
+        deleted_at: new Date()
+      }
+    });
   })
 };

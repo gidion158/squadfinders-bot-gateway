@@ -1,4 +1,4 @@
-import { Player, Message, AdminUser } from '../models/index.js';
+import { Player, Message, AdminUser, DeletedMessage } from '../models/index.js';
 import { handleAsyncError } from '../utils/errorHandler.js';
 
 // Helper function to parse timeframe string (e.g., '60m', '12h', '7d')
@@ -31,10 +31,11 @@ const parseTimeframe = (timeframe) => {
 export const dashboardController = {
   // Get dashboard statistics
   getStats: handleAsyncError(async (req, res) => {
-    const [playerCount, messageCount, adminUserCount] = await Promise.all([
+    const [playerCount, messageCount, adminUserCount, deletedMessageCount] = await Promise.all([
       Player.countDocuments(),
       Message.countDocuments(),
-      AdminUser.countDocuments()
+      AdminUser.countDocuments(),
+      DeletedMessage.countDocuments()
     ]);
 
     const [activePlayers, pcPlayers, consolePlayers, lfgMessages, validMessages] = await Promise.all([
@@ -70,11 +71,24 @@ export const dashboardController = {
       Message.countDocuments({ message_date: { $gte: startOfToday }, is_valid: true })
     ]);
 
+    // Calculate deleted messages today and average deletion time
+    const [deletedToday, avgDeletionTime] = await Promise.all([
+      DeletedMessage.countDocuments({ deleted_at: { $gte: startOfToday } }),
+      DeletedMessage.aggregate([
+        {
+          $group: {
+            _id: null,
+            avgDeletionTime: { $avg: '$deletion_time_minutes' }
+          }
+        }
+      ])
+    ]);
     res.json({
       counts: {
         players: playerCount,
         messages: messageCount,
         adminUsers: adminUserCount,
+        deletedMessages: deletedMessageCount,
         activePlayers,
         pcPlayers,
         consolePlayers,
@@ -88,7 +102,9 @@ export const dashboardController = {
         messagesPerMinute: Math.round(messagesLastHour / 60 * 100) / 100,
         validMessagesPerMinute: Math.round(validMessagesLastHour / 60 * 100) / 100,
         messagesToday,
-        validMessagesToday
+        validMessagesToday,
+        deletedToday,
+        avgDeletionTimeMinutes: Math.round((avgDeletionTime[0]?.avgDeletionTime || 0) * 100) / 100
       }
     });
   }),
@@ -163,6 +179,36 @@ export const dashboardController = {
     res.json(distribution);
   }),
 
+  // Get deleted messages chart data
+  getDeletedMessagesChartData: handleAsyncError(async (req, res) => {
+    const { timeframe = '7d' } = req.query;
+    const startDate = parseTimeframe(timeframe);
+
+    const deletedMessages = await DeletedMessage.aggregate([
+      {
+        $match: { deleted_at: { $gte: startDate } }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$deleted_at' },
+            month: { $month: '$deleted_at' },
+            day: { $dayOfMonth: '$deleted_at' }
+          },
+          count: { $sum: 1 },
+          avgDeletionTime: { $avg: '$deletion_time_minutes' }
+        }
+      },
+      {
+        $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 }
+      }
+    ]);
+
+    const formattedData = deletedMessages.map(item => ({
+      date: new Date(item._id.year, item._id.month - 1, item._id.day).toISOString(),
+      count: item.count,
+      avgDeletionTimeMinutes: Math.round(item.avgDeletionTime * 100) / 100
+    }));
   // Get AI status distribution
   getAIStatusDistribution: handleAsyncError(async (req, res) => {
     const distribution = await Message.aggregate([
@@ -174,6 +220,8 @@ export const dashboardController = {
       }
     ]);
 
+    res.json(formattedData);
+  }),
     res.json(distribution);
   }),
 };
