@@ -11,40 +11,43 @@ const updateDeletionStats = async (deletionTimeSeconds) => {
 
   // Use Promise.all to update both stats in parallel for better performance
   await Promise.all([
-    // Update overall stats
-    (async () => {
-      let stats = await DeletedMessageStats.findOne();
-      if (!stats) {
-        stats = new DeletedMessageStats();
+    // Update overall stats atomically
+    DeletedMessageStats.findOneAndUpdate(
+      {}, // Find the single stats document
+      {
+        $inc: {
+          totalDeleted: 1,
+          deletedToday: 1,
+          totalDeletionTimeSeconds: deletionTimeSeconds
+        },
+        $set: { lastResetDate: today }
+      },
+      { upsert: true, new: true }
+    ).then(stats => {
+      // Recalculate average after the update
+      if (stats) {
+        stats.avgDeletionTimeSeconds = stats.totalDeletionTimeSeconds / stats.totalDeleted;
+        return stats.save();
       }
+    }),
 
-      // Reset daily counter if it's a new day
-      if (!stats.lastResetDate || stats.lastResetDate < today) {
-        stats.deletedToday = 0;
-        stats.lastResetDate = today;
+    // Update daily stats for charts atomically
+    DailyDeletion.findOneAndUpdate(
+      { date: today },
+      {
+        $inc: {
+          count: 1,
+          totalDeletionTimeSeconds: deletionTimeSeconds
+        }
+      },
+      { upsert: true, new: true }
+    ).then(dailyStats => {
+      // Recalculate average for the day
+      if (dailyStats) {
+        dailyStats.avgDeletionTimeSeconds = dailyStats.totalDeletionTimeSeconds / dailyStats.count;
+        return dailyStats.save();
       }
-
-      stats.totalDeleted += 1;
-      stats.deletedToday += 1;
-      stats.totalDeletionTimeSeconds += deletionTimeSeconds;
-      stats.avgDeletionTimeSeconds = stats.totalDeletionTimeSeconds / stats.totalDeleted;
-
-      await stats.save();
-    })(),
-
-    // Update daily stats for charts
-    (async () => {
-      let dailyStats = await DailyDeletion.findOne({ date: today });
-      if (!dailyStats) {
-        dailyStats = new DailyDeletion({ date: today });
-      }
-
-      dailyStats.count += 1;
-      dailyStats.totalDeletionTimeSeconds += deletionTimeSeconds;
-      dailyStats.avgDeletionTimeSeconds = dailyStats.totalDeletionTimeSeconds / dailyStats.count;
-
-      await dailyStats.save();
-    })()
+    })
   ]);
 };
 
