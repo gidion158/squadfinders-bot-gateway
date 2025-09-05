@@ -51,7 +51,7 @@ const DailyDeletionSchema = new mongoose.Schema({
 });
 
 // Index for better query performance
-DailyDeletionSchema.index({ date: 1 });
+// DailyDeletionSchema.index({ date: 1 });
 
 export const DeletedMessageStats = mongoose.model('DeletedMessageStats', DeletedMessageStatsSchema);
 export const DailyDeletion = mongoose.model('DailyDeletion', DailyDeletionSchema);
