@@ -4,6 +4,50 @@ import { handleAsyncError } from '../utils/errorHandler.js';
 import { validateObjectId, validateMessageId } from '../utils/validators.js';
 import { config } from '../config/index.js';
 
+// Helper method to update deletion statistics
+const updateDeletionStats = async (deletionTimeSeconds) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Use Promise.all to update both stats in parallel for better performance
+  await Promise.all([
+    // Update overall stats
+    (async () => {
+      let stats = await DeletedMessageStats.findOne();
+      if (!stats) {
+        stats = new DeletedMessageStats();
+      }
+
+      // Reset daily counter if it's a new day
+      if (!stats.lastResetDate || stats.lastResetDate < today) {
+        stats.deletedToday = 0;
+        stats.lastResetDate = today;
+      }
+
+      stats.totalDeleted += 1;
+      stats.deletedToday += 1;
+      stats.totalDeletionTimeSeconds += deletionTimeSeconds;
+      stats.avgDeletionTimeSeconds = stats.totalDeletionTimeSeconds / stats.totalDeleted;
+
+      await stats.save();
+    })(),
+
+    // Update daily stats for charts
+    (async () => {
+      let dailyStats = await DailyDeletion.findOne({ date: today });
+      if (!dailyStats) {
+        dailyStats = new DailyDeletion({ date: today });
+      }
+
+      dailyStats.count += 1;
+      dailyStats.totalDeletionTimeSeconds += deletionTimeSeconds;
+      dailyStats.avgDeletionTimeSeconds = dailyStats.totalDeletionTimeSeconds / dailyStats.count;
+
+      await dailyStats.save();
+    })()
+  ]);
+};
+
 export const messageController = {
   // Get all messages with filtering and pagination
   getAll: handleAsyncError(async (req, res) => {
@@ -176,8 +220,8 @@ export const messageController = {
     // Calculate deletion time in seconds
     const deletionTimeSeconds = Math.round((Date.now() - message.message_date.getTime()) / 1000);
 
-    // Update deletion statistics
-    await messageController.updateDeletionStats(deletionTimeSeconds);
+    // Update deletion statistics by calling the local helper function
+    await updateDeletionStats(deletionTimeSeconds);
 
     // Delete the original message
     if (validateObjectId(id)) {
@@ -194,42 +238,5 @@ export const messageController = {
       }
     });
   }),
-
-  // Helper method to update deletion statistics
-  updateDeletionStats: async (deletionTimeSeconds) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // Update overall stats
-    let stats = await DeletedMessageStats.findOne();
-    if (!stats) {
-      stats = new DeletedMessageStats();
-    }
-
-    // Reset daily counter if it's a new day
-    if (!stats.lastResetDate || stats.lastResetDate < today) {
-      stats.deletedToday = 0;
-      stats.lastResetDate = today;
-    }
-
-    stats.totalDeleted += 1;
-    stats.deletedToday += 1;
-    stats.totalDeletionTimeSeconds += deletionTimeSeconds;
-    stats.avgDeletionTimeSeconds = stats.totalDeletionTimeSeconds / stats.totalDeleted;
-
-    await stats.save();
-
-    // Update daily stats for charts
-    let dailyStats = await DailyDeletion.findOne({ date: today });
-    if (!dailyStats) {
-      dailyStats = new DailyDeletion({ date: today });
-    }
-
-    dailyStats.count += 1;
-    dailyStats.totalDeletionTimeSeconds += deletionTimeSeconds;
-    dailyStats.avgDeletionTimeSeconds = dailyStats.totalDeletionTimeSeconds / dailyStats.count;
-
-    await dailyStats.save();
-  }
 };
 
