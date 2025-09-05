@@ -1,6 +1,7 @@
 import AdminJS from 'adminjs';
 import * as AdminJSMongoose from '@adminjs/mongoose';
-import { Player, Message, AdminUser, DeletedMessage } from '../models/index.js';
+import { Player, Message, AdminUser } from '../models/index.js';
+import { DeletedMessageStats, DailyDeletion } from '../models/DeletedMessage.js';
 import { componentLoader } from './componentLoader.js';
 
 // Register AdminJS Mongoose adapter
@@ -149,41 +150,40 @@ export const adminJS = new AdminJS({
       }
     },
     {
-      resource: DeletedMessage,
-      options: {
-        perPage: 100,
-        actions: {
-          new: { isAccessible: false }, // Don't allow creating deleted messages manually
-          edit: { isAccessible: false }, // Don't allow editing deleted messages
-          delete: { isAccessible: isAdmin }, // Only admins can delete from deleted messages
-          bulkDelete: { isAccessible: isAdmin },
-          list: { isAccessible: true },
-          show: { isAccessible: true },
-        },
-        navigation: {
-          name: 'Analytics',
-          icon: 'Archive'
-        },
-        sort: {
-          sortBy: 'deleted_at',
-          direction: 'desc'
-        },
-        listProperties: [
-          'totalDeleted',
-          'deletedToday',
-          'avgDeletionTimeSeconds',
-          'lastResetDate'
-        ],
-        showProperties: [
-          'totalDeleted',
-          'deletedToday',
-          'avgDeletionTimeSeconds',
-          'totalDeletionTimeSeconds',
-          'lastResetDate',
-          'createdAt',
-          'updatedAt'
-        ]
-      }
+        resource: DeletedMessageStats,
+        options: {
+            name: 'Deletion Stats',
+            parent: {
+                name: 'Analytics',
+                icon: 'Archive'
+            },
+            actions: {
+              new: { isAccessible: false },
+              edit: { isAccessible: false },
+              delete: { isAccessible: isAdmin },
+              bulkDelete: { isAccessible: isAdmin },
+              list: { isAccessible: true },
+              show: { isAccessible: true },
+            },
+        }
+    },
+    {
+        resource: DailyDeletion,
+        options: {
+            name: 'Daily Deletions',
+            parent: {
+                name: 'Analytics',
+                icon: 'Archive'
+            },
+            actions: {
+              new: { isAccessible: false },
+              edit: { isAccessible: false },
+              delete: { isAccessible: isAdmin },
+              bulkDelete: { isAccessible: isAdmin },
+              list: { isAccessible: true },
+              show: { isAccessible: true },
+            },
+        }
     },
     {
       resource: AdminUser,
@@ -224,8 +224,8 @@ export const adminJS = new AdminJS({
           messages: 'Messages',
           AdminUser: 'Admin User',
           adminUsers: 'Admin Users',
-          DeletedMessage: 'Deleted Message',
-          deletedMessages: 'Deleted Messages'
+          DeletedMessageStats: 'Deletion Stats',
+          DailyDeletion: 'Daily Deletions'
         }
       }
     }
