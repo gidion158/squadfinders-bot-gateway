@@ -5,65 +5,91 @@ const Dashboard = (props) => {
   const [platformDistribution, setPlatformDistribution] = useState([]);
   const [aiStatusDistribution, setAIStatusDistribution] = useState([]);
   const [messagesChartData, setMessagesChartData] = useState([]);
+  const [deletionChartData, setDeletionChartData] = useState([]);
   const [timeRange, setTimeRange] = useState('24h');
+  const [deletionTimeRange, setDeletionTimeRange] = useState('7d');
   const [messagesChartInstance, setMessagesChartInstance] = useState(null);
+  const [deletionChartInstance, setDeletionChartInstance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const [refreshInterval, setRefreshInterval] = useState(30); // seconds
+  const [refreshIntervalId, setRefreshIntervalId] = useState(null);
+
+  const fetchData = async () => {
+    try {
+      setError(null);
+
+      const fetchOptions = {
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      };
+
+      // Fetch all data in parallel
+      const [
+        statsResponse,
+        platformResponse,
+        aiStatusResponse,
+        messagesChartResponse,
+        deletionChartResponse
+      ] = await Promise.all([
+        fetch('/api/dashboard/stats', fetchOptions),
+        fetch('/api/dashboard/platform-distribution', fetchOptions),
+        fetch('/api/dashboard/ai-status-distribution', fetchOptions),
+        fetch(`/api/dashboard/messages-chart?timeframe=${timeRange}`, fetchOptions),
+        fetch(`/api/deleted-messages/chart?timeframe=${deletionTimeRange}`, fetchOptions)
+      ]);
+
+      if (!statsResponse.ok) {
+        throw new Error(`Failed to fetch stats: ${statsResponse.status}`);
+      }
+      const statsData = await statsResponse.json();
+      setStats(statsData.counts);
+
+      if (!platformResponse.ok) throw new Error('Failed to fetch platform data');
+      const platformData = await platformResponse.json();
+      setPlatformDistribution(platformData);
+
+      if (!aiStatusResponse.ok) throw new Error('Failed to fetch AI status data');
+      const aiStatusData = await aiStatusResponse.json();
+      setAIStatusDistribution(aiStatusData);
+
+      if (!messagesChartResponse.ok) throw new Error('Failed to fetch messages chart data');
+      const chartData = await messagesChartResponse.json();
+      setMessagesChartData(chartData);
+
+      if (!deletionChartResponse.ok) throw new Error('Failed to fetch deletion chart data');
+      const deletionData = await deletionChartResponse.json();
+      setDeletionChartData(deletionData);
+
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      setError(error.message);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const fetchOptions = {
-          credentials: 'same-origin',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        };
-
-        // Fetch all data in parallel
-        const [
-          statsResponse,
-          platformResponse,
-          aiStatusResponse,
-          messagesChartResponse
-        ] = await Promise.all([
-          fetch('/api/dashboard/stats', fetchOptions),
-          fetch('/api/dashboard/platform-distribution', fetchOptions),
-          fetch('/api/dashboard/ai-status-distribution', fetchOptions),
-          fetch(`/api/dashboard/messages-chart?timeframe=${timeRange}`, fetchOptions)
-        ]);
-
-        if (!statsResponse.ok) {
-          throw new Error(`Failed to fetch stats: ${statsResponse.status}`);
-        }
-        const statsData = await statsResponse.json();
-        setStats(statsData.counts);
-
-        if (!platformResponse.ok) throw new Error('Failed to fetch platform data');
-        const platformData = await platformResponse.json();
-        setPlatformDistribution(platformData);
-
-        if (!aiStatusResponse.ok) throw new Error('Failed to fetch AI status data');
-        const aiStatusData = await aiStatusResponse.json();
-        setAIStatusDistribution(aiStatusData);
-
-        if (!messagesChartResponse.ok) throw new Error('Failed to fetch messages chart data');
-        const chartData = await messagesChartResponse.json();
-        setMessagesChartData(chartData);
-
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
+    const initialFetch = async () => {
+      setLoading(true);
+      await fetchData();
+      setLoading(false);
     };
+    initialFetch();
+  }, [timeRange, deletionTimeRange]);
 
-    fetchData();
-  }, [timeRange]);
+  // Auto-refresh functionality
+  useEffect(() => {
+    if (autoRefresh) {
+      const intervalId = setInterval(fetchData, refreshInterval * 1000);
+      setRefreshIntervalId(intervalId);
+      return () => clearInterval(intervalId);
+    } else if (refreshIntervalId) {
+      clearInterval(refreshIntervalId);
+      setRefreshIntervalId(null);
+    }
+  }, [autoRefresh, refreshInterval]);
 
   useEffect(() => {
     if (!loading && !error) {
@@ -96,12 +122,12 @@ const Dashboard = (props) => {
 
       loadChartScripts();
     }
-  }, [loading, error, messagesChartData, platformDistribution, aiStatusDistribution]);
+  }, [loading, error, messagesChartData, platformDistribution, aiStatusDistribution, deletionChartData]);
 
   const createCharts = () => {
     if (!window.Chart) return;
 
-    ['platformChart', 'aiStatusChart', 'messagesChart'].forEach(chartId => {
+    ['platformChart', 'aiStatusChart', 'messagesChart', 'deletionChart'].forEach(chartId => {
         const chart = window.Chart.getChart(chartId);
         if (chart) chart.destroy();
     });
@@ -129,16 +155,16 @@ const Dashboard = (props) => {
         });
     }
 
-    // AI Status Distribution Chart with static colors
+    // AI Status Distribution Chart with static colors including unknown
     const aiStatusCtx = document.getElementById('aiStatusChart');
     if (aiStatusCtx && aiStatusDistribution.length > 0) {
-        // Map AI status values to proper labels and static colors
         const statusConfig = {
           'pending': { label: 'Pending', color: '#ffd93d' },
           'processing': { label: 'Processing', color: '#6bcf7f' },
           'completed': { label: 'Completed', color: '#4d96ff' },
           'failed': { label: 'Failed', color: '#ff6b6b' },
-          'expired': { label: 'Expired', color: '#a8a8a8' }
+          'expired': { label: 'Expired', color: '#a8a8a8' },
+          'unknown': { label: 'Unknown', color: '#cccccc' }
         };
         
         const labels = [];
@@ -147,12 +173,10 @@ const Dashboard = (props) => {
         
         aiStatusDistribution.forEach(item => {
           const status = item._id;
-          const config = statusConfig[status];
-          if (config) {
-            labels.push(config.label);
-            colors.push(config.color);
-            data.push(item.count);
-          }
+          const config = statusConfig[status] || { label: 'Other', color: '#999999' };
+          labels.push(config.label);
+          colors.push(config.color);
+          data.push(item.count);
         });
         
         new window.Chart(aiStatusCtx, {
@@ -246,6 +270,74 @@ const Dashboard = (props) => {
       });
       setMessagesChartInstance(newChartInstance);
     }
+
+    // Deletion Rate Chart
+    const deletionCtx = document.getElementById('deletionChart');
+    if (deletionCtx && deletionChartData) {
+      const newDeletionChartInstance = new window.Chart(deletionCtx, {
+        type: 'line',
+        data: {
+          datasets: [{
+            label: 'Deleted Messages',
+            data: deletionChartData.map(item => ({ x: new Date(item.date), y: item.count })),
+            borderColor: '#ff6b6b',
+            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+            tension: 0.4,
+            fill: true
+          }, {
+            label: 'Avg Deletion Time (seconds)',
+            data: deletionChartData.map(item => ({ x: new Date(item.date), y: item.avgDeletionTimeSeconds })),
+            borderColor: '#ffa726',
+            backgroundColor: 'rgba(255, 167, 38, 0.1)',
+            tension: 0.4,
+            fill: false,
+            yAxisID: 'y1'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              type: 'time',
+              time: {
+                tooltipFormat: 'PP'
+              },
+              title: {
+                display: true,
+                text: 'Date'
+              }
+            },
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Deleted Count'
+              }
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              title: {
+                display: true,
+                text: 'Avg Time (seconds)'
+              },
+              grid: {
+                drawOnChartArea: false,
+              },
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: 'Message Deletion Rate'
+            }
+          }
+        }
+      });
+      setDeletionChartInstance(newDeletionChartInstance);
+    }
   };
 
   const timeButtons = [
@@ -256,6 +348,18 @@ const Dashboard = (props) => {
     { label: '3d', value: '3d' }, { label: '7d', value: '7d' },
     { label: '1mo', value: '1mo' }, { label: '3mo', value: '3mo' },
     { label: '6mo', value: '6mo' }, { label: '1y', value: '1y' }
+  ];
+
+  const deletionTimeButtons = [
+    { label: '1d', value: '1d' }, { label: '3d', value: '3d' }, { label: '7d', value: '7d' },
+    { label: '14d', value: '14d' }, { label: '30d', value: '30d' }, { label: '3mo', value: '3mo' }
+  ];
+
+  const refreshIntervals = [
+    { label: '5s', value: 5 },
+    { label: '10s', value: 10 },
+    { label: '30s', value: 30 },
+    { label: '60s', value: 60 }
   ];
 
   if (loading) {
@@ -276,7 +380,45 @@ const Dashboard = (props) => {
 
   return React.createElement('div', { style: { padding: '20px', backgroundColor: '#f8f9fa', minHeight: '100vh' }}, [
     React.createElement('style', { key: 'styles' }, `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`),
-    React.createElement('h1', { key: 'title', style: { marginBottom: '30px', color: '#333', fontSize: '28px', fontWeight: 'bold' }}, 'SquadFinders Dashboard'),
+    
+    // Header with auto-refresh controls
+    React.createElement('div', { key: 'header', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' }}, [
+      React.createElement('h1', { key: 'title', style: { margin: 0, color: '#333', fontSize: '28px', fontWeight: 'bold' }}, 'SquadFinders Dashboard'),
+      React.createElement('div', { key: 'controls', style: { display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}, [
+        React.createElement('label', { key: 'refresh-label', style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#666' }}, [
+          React.createElement('input', {
+            key: 'refresh-checkbox',
+            type: 'checkbox',
+            checked: autoRefresh,
+            onChange: (e) => setAutoRefresh(e.target.checked),
+            style: { margin: 0 }
+          }),
+          'Auto Refresh'
+        ]),
+        autoRefresh && React.createElement('select', {
+          key: 'refresh-interval',
+          value: refreshInterval,
+          onChange: (e) => setRefreshInterval(parseInt(e.target.value)),
+          style: { padding: '6px 10px', borderRadius: '4px', border: '1px solid #ddd', fontSize: '14px' }
+        }, refreshIntervals.map(interval => 
+          React.createElement('option', { key: interval.value, value: interval.value }, interval.label)
+        )),
+        React.createElement('button', {
+          key: 'manual-refresh',
+          onClick: fetchData,
+          style: {
+            background: '#667eea',
+            color: 'white',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '500'
+          }
+        }, '🔄 Refresh')
+      ])
+    ]),
     
     // Statistics Grid
     React.createElement('div', { key: 'stats', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '40px' }}, [
@@ -296,7 +438,7 @@ const Dashboard = (props) => {
       React.createElement(StatBox, { key: 'validMessagesPerMin', title: 'Valid/Min', value: stats?.validMessagesPerMinute || 0, color: '#43e97b', icon: '📈', isDecimal: true }),
       React.createElement(StatBox, { key: 'deletedMessages', title: 'Total Deleted', value: stats?.deletedMessages || 0, color: '#ff6b6b', icon: '🗑️' }),
       React.createElement(StatBox, { key: 'deletedToday', title: 'Deleted Today', value: stats?.deletedToday || 0, color: '#ff8a80', icon: '📅' }),
-      React.createElement(StatBox, { key: 'avgDeletionTime', title: 'Avg Deletion Time', value: `${stats?.avgDeletionTimeMinutes || 0}m`, color: '#ffa726', icon: '⏱️' })
+      React.createElement(StatBox, { key: 'avgDeletionTime', title: 'Avg Deletion Time', value: `${stats?.avgDeletionTimeSeconds || 0}s`, color: '#ffa726', icon: '⏱️' })
     ]),
     
     // Charts Grid
@@ -338,6 +480,32 @@ const Dashboard = (props) => {
         ]),
         React.createElement('div', { key: 'canvas-container', style: { height: '350px', position: 'relative' }}, 
           React.createElement('canvas', { id: 'messagesChart', style: { width: '100%', height: '100%' } })
+        )
+      ]),
+
+      // Deletion Rate Chart
+      React.createElement('div', { key: 'deletionChartContainer', style: { backgroundColor: 'white', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0' }}, [
+        React.createElement('div', { key: 'chart-header', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}, [
+          React.createElement('h3', { key: 'title', style: { color: '#333', fontSize: '18px', fontWeight: '600', margin: 0 }}, 'Message Deletion Rate'),
+          React.createElement('div', { key: 'buttons' },
+            deletionTimeButtons.map(btn => React.createElement('button', {
+              key: btn.value,
+              onClick: () => setDeletionTimeRange(btn.value),
+              style: {
+                background: deletionTimeRange === btn.value ? '#ff6b6b' : '#f8f9fa',
+                color: deletionTimeRange === btn.value ? 'white' : '#333',
+                border: '1px solid #e2e8f0', 
+                padding: '8px 12px', 
+                marginLeft: '5px', 
+                borderRadius: '6px', 
+                cursor: 'pointer', 
+                fontWeight: '500'
+              }
+            }, btn.label))
+          )
+        ]),
+        React.createElement('div', { key: 'canvas-container', style: { height: '350px', position: 'relative' }}, 
+          React.createElement('canvas', { id: 'deletionChart', style: { width: '100%', height: '100%' } })
         )
       ]),
       

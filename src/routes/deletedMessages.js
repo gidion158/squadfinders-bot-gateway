@@ -1,107 +1,8 @@
-// routes/deletedMessages.js
 import express from 'express';
 import { deletedMessageController } from '../controllers/deletedMessageController.js';
 import { authMiddleware, authorizeRole } from '../middleware/auth.js';
 
 const router = express.Router();
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     DeletedMessage:
- *       type: object
- *       properties:
- *         original_message_id:
- *           type: number
- *           description: Original message ID that was deleted
- *         message_date:
- *           type: string
- *           format: date-time
- *           description: Original message creation date
- *         deleted_at:
- *           type: string
- *           format: date-time
- *           description: When the message was deleted
- *         sender:
- *           type: object
- *           properties:
- *             id:
- *               type: string
- *             username:
- *               type: string
- *             name:
- *               type: string
- *         group:
- *           type: object
- *           properties:
- *             group_id:
- *               type: string
- *             group_title:
- *               type: string
- *             group_username:
- *               type: string
- *         message:
- *           type: string
- *         is_valid:
- *           type: boolean
- *         is_lfg:
- *           type: boolean
- *         reason:
- *           type: string
- *         ai_status:
- *           type: string
- *           enum: [pending, processing, completed, failed, expired]
- *         deletion_time_minutes:
- *           type: number
- *           description: Time between message creation and deletion in minutes
- */
-
-/**
- * @swagger
- * /api/deleted-messages:
- *   get:
- *     summary: Get all deleted messages
- *     tags: [Deleted Messages]
- *     security:
- *       - basicAuth: []
- *     parameters:
- *       - in: query
- *         name: group_username
- *         schema:
- *           type: string
- *       - in: query
- *         name: sender_username
- *         schema:
- *           type: string
- *       - in: query
- *         name: is_valid
- *         schema:
- *           type: boolean
- *       - in: query
- *         name: is_lfg
- *         schema:
- *           type: boolean
- *       - in: query
- *         name: ai_status
- *         schema:
- *           type: string
- *           enum: [pending, processing, completed, failed, expired]
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           default: 1
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 100
- *     responses:
- *       200:
- *         description: List of deleted messages with pagination
- */
-router.get('/', authMiddleware, authorizeRole(['admin', 'viewer']), deletedMessageController.getAll);
 
 /**
  * @swagger
@@ -140,24 +41,23 @@ router.get('/daily', authMiddleware, authorizeRole(['admin', 'viewer']), deleted
 
 /**
  * @swagger
- * /api/deleted-messages/{id}:
+ * /api/deleted-messages/chart:
  *   get:
- *     summary: Get deleted message by ID
+ *     summary: Get deletion chart data
  *     tags: [Deleted Messages]
  *     security:
  *       - basicAuth: []
  *     parameters:
- *       - in: path
- *         name: id
- *         required: true
+ *       - in: query
+ *         name: timeframe
  *         schema:
  *           type: string
+ *           default: "7d"
+ *         description: Time range for the chart (e.g., '7d', '30d', '3mo')
  *     responses:
  *       200:
- *         description: Deleted message details
- *       404:
- *         description: Deleted message not found
+ *         description: Deletion chart data with counts and average deletion time
  */
-router.get('/:id', authMiddleware, authorizeRole(['admin', 'viewer']), deletedMessageController.getById);
+router.get('/chart', authMiddleware, authorizeRole(['admin', 'viewer']), deletedMessageController.getChartData);
 
 export default router;

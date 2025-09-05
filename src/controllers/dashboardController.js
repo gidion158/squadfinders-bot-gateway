@@ -1,4 +1,5 @@
 import { Player, Message, AdminUser, DeletedMessage } from '../models/index.js';
+import { DeletedMessageStats } from '../models/index.js';
 import { handleAsyncError } from '../utils/errorHandler.js';
 
 // Helper function to parse timeframe string (e.g., '60m', '12h', '7d')
@@ -31,12 +32,14 @@ const parseTimeframe = (timeframe) => {
 export const dashboardController = {
   // Get dashboard statistics
   getStats: handleAsyncError(async (req, res) => {
-    const [playerCount, messageCount, adminUserCount, deletedMessageCount] = await Promise.all([
+    const [playerCount, messageCount, adminUserCount] = await Promise.all([
       Player.countDocuments(),
       Message.countDocuments(),
-      AdminUser.countDocuments(),
-      DeletedMessage.countDocuments()
+      AdminUser.countDocuments()
     ]);
+
+    // Get deletion stats
+    const deletionStats = await DeletedMessageStats.findOne();
 
     const [activePlayers, pcPlayers, consolePlayers, lfgMessages, validMessages] = await Promise.all([
       Player.countDocuments({ active: true }),
@@ -66,18 +69,9 @@ export const dashboardController = {
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
 
-    const [messagesToday, validMessagesToday, deletedToday, avgDeletionTime] = await Promise.all([
+    const [messagesToday, validMessagesToday] = await Promise.all([
       Message.countDocuments({ message_date: { $gte: startOfToday } }),
-      Message.countDocuments({ message_date: { $gte: startOfToday }, is_valid: true }),
-      DeletedMessage.countDocuments({ deleted_at: { $gte: startOfToday } }),
-      DeletedMessage.aggregate([
-        {
-          $group: {
-            _id: null,
-            avgDeletionTime: { $avg: '$deletion_time_minutes' }
-          }
-        }
-      ])
+      Message.countDocuments({ message_date: { $gte: startOfToday }, is_valid: true })
     ]);
 
     res.json({
@@ -85,7 +79,7 @@ export const dashboardController = {
         players: playerCount,
         messages: messageCount,
         adminUsers: adminUserCount,
-        deletedMessages: deletedMessageCount,
+        deletedMessages: deletionStats?.totalDeleted || 0,
         activePlayers,
         pcPlayers,
         consolePlayers,
@@ -100,8 +94,8 @@ export const dashboardController = {
         validMessagesPerMinute: Math.round(validMessagesLastHour / 60 * 100) / 100,
         messagesToday,
         validMessagesToday,
-        deletedToday,
-        avgDeletionTimeMinutes: Math.round((avgDeletionTime[0]?.avgDeletionTime || 0) * 100) / 100
+        deletedToday: deletionStats?.deletedToday || 0,
+        avgDeletionTimeSeconds: Math.round((deletionStats?.avgDeletionTimeSeconds || 0) * 100) / 100
       }
     });
   }),
@@ -220,6 +214,13 @@ export const dashboardController = {
         }
       }
     ]);
+    
+    // Add unknown status for messages without ai_status (null values)
+    const unknownCount = await Message.countDocuments({ ai_status: { $exists: false } });
+    if (unknownCount > 0) {
+      distribution.push({ _id: 'unknown', count: unknownCount });
+    }
+    
     res.json(distribution);
   }),
 };

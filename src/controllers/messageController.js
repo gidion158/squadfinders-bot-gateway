@@ -1,6 +1,8 @@
 import { Message, DeletedMessage } from '../models/index.js';
+import { DeletedMessageStats, DailyDeletion } from '../models/index.js';
 import { handleAsyncError } from '../utils/errorHandler.js';
 import { validateObjectId, validateMessageId } from '../utils/validators.js';
+import { config } from '../config/index.js';
 
 export const messageController = {
   // Get all messages with filtering and pagination
@@ -63,14 +65,14 @@ export const messageController = {
     const { limit = 50 } = req.query;
     const maxLimit = Math.min(parseInt(limit), 100);
     
-    // Messages older than 5 minutes should be expired
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    // Messages older than configured minutes should be expired
+    const expiryTime = new Date(Date.now() - config.autoExpiry.expiryMinutes * 60 * 1000);
     
     // First, expire old pending messages
     await Message.updateMany(
       {
         ai_status: 'pending',
-        createdAt: { $lt: fiveMinutesAgo }
+        message_date: { $lt: expiryTime }
       },
       {
         $set: { ai_status: 'expired' }
@@ -81,9 +83,9 @@ export const messageController = {
     const recentPendingMessages = await Message.find({
       is_valid: true,
       ai_status: 'pending',
-      createdAt: { $gte: fiveMinutesAgo }
+      message_date: { $gte: expiryTime }
     })
-    .sort({ createdAt: 1 }) // Oldest first
+    .sort({ message_date: 1 }) // Oldest first
     .limit(maxLimit);
 
     // Mark these messages as processing
@@ -171,23 +173,11 @@ export const messageController = {
         return res.status(404).json({ error: 'Message not found' });
     }
 
-    // Calculate deletion time in minutes
-    const deletionTimeMinutes = Math.round((Date.now() - message.message_date.getTime()) / (1000 * 60));
+    // Calculate deletion time in seconds
+    const deletionTimeSeconds = Math.round((Date.now() - message.message_date.getTime()) / 1000);
 
-    // Store deleted message for analytics
-    await DeletedMessage.create({
-      original_message_id: message.message_id,
-      message_date: message.message_date,
-      deleted_at: new Date(),
-      sender: message.sender,
-      group: message.group,
-      message: message.message,
-      is_valid: message.is_valid,
-      is_lfg: message.is_lfg,
-      reason: message.reason,
-      ai_status: message.ai_status,
-      deletion_time_minutes: deletionTimeMinutes
-    });
+    // Update deletion statistics
+    await this.updateDeletionStats(deletionTimeSeconds);
 
     // Delete the original message
     if (validateObjectId(id)) {
@@ -199,9 +189,46 @@ export const messageController = {
     res.json({
       message: 'Message deleted successfully',
       deletion_analytics: {
-        deletion_time_minutes: deletionTimeMinutes,
+        deletion_time_seconds: deletionTimeSeconds,
         deleted_at: new Date()
       }
     });
-  })
+  }),
+
+  // Helper method to update deletion statistics
+  updateDeletionStats: async (deletionTimeSeconds) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Update overall stats
+    let stats = await DeletedMessageStats.findOne();
+    if (!stats) {
+      stats = new DeletedMessageStats();
+    }
+
+    // Reset daily counter if it's a new day
+    if (stats.lastResetDate < today) {
+      stats.deletedToday = 0;
+      stats.lastResetDate = today;
+    }
+
+    stats.totalDeleted += 1;
+    stats.deletedToday += 1;
+    stats.totalDeletionTimeSeconds += deletionTimeSeconds;
+    stats.avgDeletionTimeSeconds = stats.totalDeletionTimeSeconds / stats.totalDeleted;
+    
+    await stats.save();
+
+    // Update daily stats for charts
+    let dailyStats = await DailyDeletion.findOne({ date: today });
+    if (!dailyStats) {
+      dailyStats = new DailyDeletion({ date: today });
+    }
+
+    dailyStats.count += 1;
+    dailyStats.totalDeletionTimeSeconds += deletionTimeSeconds;
+    dailyStats.avgDeletionTimeSeconds = dailyStats.totalDeletionTimeSeconds / dailyStats.count;
+    
+    await dailyStats.save();
+  }
 };

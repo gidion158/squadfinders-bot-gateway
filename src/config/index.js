@@ -21,5 +21,10 @@ export const config = {
     title: 'SquadFinders Bot Gateway API',
     version: '1.0.0',
     description: 'API for managing player records and messages',
+  },
+  autoExpiry: {
+    enabled: process.env.AUTO_EXPIRY_ENABLED !== 'false', // Default true
+    expiryMinutes: parseInt(process.env.EXPIRY_MINUTES) || 5, // Default 5 minutes
+    intervalMinutes: parseInt(process.env.EXPIRY_INTERVAL_MINUTES) || 1, // Default 1 minute
   }
 };

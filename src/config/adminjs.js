@@ -168,50 +168,18 @@ export const adminJS = new AdminJS({
           sortBy: 'deleted_at',
           direction: 'desc'
         },
-        properties: {
-          ai_status: {
-            availableValues: [
-              { value: 'pending', label: 'Pending' },
-              { value: 'processing', label: 'Processing' },
-              { value: 'completed', label: 'Completed' },
-              { value: 'failed', label: 'Failed' },
-              { value: 'expired', label: 'Expired' },
-            ],
-          },
-        },
         listProperties: [
-          'deleted_at',
-          'original_message_id',
-          'group.group_title',
-          'sender.username',
-          'deletion_time_minutes',
-          'is_valid',
-          'ai_status'
-        ],
-        filterProperties: [
-          'group.group_username',
-          'sender.username',
-          'deleted_at',
-          'is_valid',
-          'is_lfg',
-          'ai_status'
+          'totalDeleted',
+          'deletedToday',
+          'avgDeletionTimeSeconds',
+          'lastResetDate'
         ],
         showProperties: [
-          'original_message_id',
-          'message_date',
-          'deleted_at',
-          'deletion_time_minutes',
-          'group.group_id',
-          'group.group_title',
-          'group.group_username',
-          'sender.id',
-          'sender.username',
-          'sender.name',
-          'message',
-          'is_valid',
-          'is_lfg',
-          'reason',
-          'ai_status',
+          'totalDeleted',
+          'deletedToday',
+          'avgDeletionTimeSeconds',
+          'totalDeletionTimeSeconds',
+          'lastResetDate',
           'createdAt',
           'updatedAt'
         ]

@@ -118,7 +118,9 @@ app.listen(PORT, () => {
   console.log(`⚡ API Base: ${baseUrl}/api`);
   
   // Start auto-expiry service
-  autoExpiryService.start(1); // Check every 1 minute
+  if (config.autoExpiry.enabled) {
+    autoExpiryService.start(); // Use configured interval
+  }
 });
 
 // Graceful shutdown

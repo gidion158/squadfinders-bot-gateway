@@ -1,23 +1,33 @@
 import { Message } from '../models/index.js';
+import { config } from '../config/index.js';
 
 export class AutoExpiryService {
   constructor() {
     this.intervalId = null;
     this.isRunning = false;
+    this.enabled = config.autoExpiry.enabled;
+    this.expiryMinutes = config.autoExpiry.expiryMinutes;
+    this.intervalMinutes = config.autoExpiry.intervalMinutes;
   }
 
   // Start the auto-expiry job
-  start(intervalMinutes = 1) {
+  start(intervalMinutes = null) {
+    if (!this.enabled) {
+      console.log('⚠️ Auto-expiry service is disabled');
+      return;
+    }
+
     if (this.isRunning) {
       console.log('⚠️ Auto-expiry service is already running');
       return;
     }
 
-    console.log(`🕒 Starting auto-expiry service (checking every ${intervalMinutes} minute(s))`);
+    const interval = intervalMinutes || this.intervalMinutes;
+    console.log(`🕒 Starting auto-expiry service (checking every ${interval} minute(s), expiring after ${this.expiryMinutes} minutes)`);
     
     this.intervalId = setInterval(async () => {
       await this.expireOldMessages();
-    }, intervalMinutes * 60 * 1000);
+    }, interval * 60 * 1000);
     
     this.isRunning = true;
     
@@ -35,10 +45,26 @@ export class AutoExpiryService {
     }
   }
 
-  // Expire messages older than 5 minutes that are still pending
+  // Enable/disable the service
+  setEnabled(enabled) {
+    this.enabled = enabled;
+    if (!enabled && this.isRunning) {
+      this.stop();
+    }
+  }
+
+  // Update expiry time
+  setExpiryMinutes(minutes) {
+    this.expiryMinutes = minutes;
+    console.log(`⏰ Auto-expiry time updated to ${minutes} minutes`);
+  }
+
+  // Expire messages older than configured minutes that are still pending
   async expireOldMessages() {
+    if (!this.enabled) return;
+
     try {
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      const expiryTime = new Date(Date.now() - this.expiryMinutes * 60 * 1000);
       
       // Process in batches to handle large datasets efficiently
       const batchSize = 1000;
@@ -48,7 +74,7 @@ export class AutoExpiryService {
         const result = await Message.updateMany(
           {
             ai_status: 'pending',
-            message_date: { $lt: fiveMinutesAgo }
+            message_date: { $lt: expiryTime } // Use message_date instead of createdAt
           },
           {
             $set: { ai_status: 'expired' }
@@ -65,7 +91,7 @@ export class AutoExpiryService {
       }
 
       if (totalExpired > 0) {
-        console.log(`⏰ Expired ${totalExpired} old pending messages`);
+        console.log(`⏰ Expired ${totalExpired} old pending messages (older than ${this.expiryMinutes} minutes)`);
       }
     } catch (error) {
       console.error('❌ Error in auto-expiry service:', error.message);
@@ -76,6 +102,9 @@ export class AutoExpiryService {
   getStatus() {
     return {
       isRunning: this.isRunning,
+      enabled: this.enabled,
+      expiryMinutes: this.expiryMinutes,
+      intervalMinutes: this.intervalMinutes,
       intervalId: this.intervalId
     };
   }
