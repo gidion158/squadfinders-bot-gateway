@@ -54,20 +54,21 @@ export const adminJS = new AdminJS({
           direction: 'desc'
         },
         listProperties: [
+          'message_id',
           'message_date',
-          'platform',
           'group.group_title',
           'sender.username',
-          'players_count',
-          'game_mode',
+          'message',
           'active'
         ],
         filterProperties: [
           'platform',
           'active',
+          'sender.username',
           'group.group_username',
           'message_date',
-          'game_mode'
+          'game_mode',
+          'players_count'
         ],
         showProperties: [
           'message_id',
