@@ -1,4 +1,4 @@
-import { Player, Message, AdminUser, DeletedMessage } from '../models/index.js';
+import { Player, Message, AdminUser, DeletedMessageStats, DailyDeletion  } from '../models/index.js';
 import { DeletedMessageStats } from '../models/index.js';
 import { handleAsyncError } from '../utils/errorHandler.js';
 

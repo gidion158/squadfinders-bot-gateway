@@ -1,4 +1,4 @@
-import { Message, DeletedMessage } from '../models/index.js';
+import { Message, DeletedMessageStats, DailyDeletion  } from '../models/index.js';
 import { DeletedMessageStats, DailyDeletion } from '../models/index.js';
 import { handleAsyncError } from '../utils/errorHandler.js';
 import { validateObjectId, validateMessageId } from '../utils/validators.js';

@@ -1,7 +1,7 @@
 import AdminJS from 'adminjs';
 import * as AdminJSMongoose from '@adminjs/mongoose';
 import { Player, Message, AdminUser } from '../models/index.js';
-import { DeletedMessageStats, DailyDeletion } from '../models/DeletedMessage.js';
+import { DeletedMessageStats, DailyDeletion } from '../models/index.js';
 import { componentLoader } from './componentLoader.js';
 
 // Register AdminJS Mongoose adapter
