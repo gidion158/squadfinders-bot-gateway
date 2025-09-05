@@ -1,5 +1,5 @@
-import { Message } from '../models/index.js';
-import { DeletedMessageStats, DailyDeletion } from '../models/index.js';
+import { Message } from '../models/Message.js';
+import { DeletedMessageStats, DailyDeletion } from '../models/DeletedMessage.js';
 import { handleAsyncError } from '../utils/errorHandler.js';
 import { validateObjectId, validateMessageId } from '../utils/validators.js';
 import { config } from '../config/index.js';
@@ -9,7 +9,7 @@ export const messageController = {
   getAll: handleAsyncError(async (req, res) => {
     const { page = 1, limit = 100, group_username, sender_username, is_valid, is_lfg, ai_status } = req.query;
     const query = {};
-    
+
     if (group_username) query['group.group_username'] = group_username;
     if (sender_username) query['sender.username'] = sender_username;
     if (is_valid !== undefined) query.is_valid = is_valid === 'true';
@@ -17,7 +17,7 @@ export const messageController = {
     if (ai_status) query.ai_status = ai_status;
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    
+
     const [messages, total] = await Promise.all([
       Message.find(query)
         .sort({ message_date: -1 })
@@ -64,10 +64,10 @@ export const messageController = {
   getUnprocessed: handleAsyncError(async (req, res) => {
     const { limit = 50 } = req.query;
     const maxLimit = Math.min(parseInt(limit), 100);
-    
+
     // Messages older than configured minutes should be expired
     const expiryTime = new Date(Date.now() - config.autoExpiry.expiryMinutes * 60 * 1000);
-    
+
     // First, expire old pending messages
     await Message.updateMany(
       {
@@ -177,7 +177,7 @@ export const messageController = {
     const deletionTimeSeconds = Math.round((Date.now() - message.message_date.getTime()) / 1000);
 
     // Update deletion statistics
-    await this.updateDeletionStats(deletionTimeSeconds);
+    await messageController.updateDeletionStats(deletionTimeSeconds);
 
     // Delete the original message
     if (validateObjectId(id)) {
@@ -207,7 +207,7 @@ export const messageController = {
     }
 
     // Reset daily counter if it's a new day
-    if (stats.lastResetDate < today) {
+    if (!stats.lastResetDate || stats.lastResetDate < today) {
       stats.deletedToday = 0;
       stats.lastResetDate = today;
     }
@@ -216,7 +216,7 @@ export const messageController = {
     stats.deletedToday += 1;
     stats.totalDeletionTimeSeconds += deletionTimeSeconds;
     stats.avgDeletionTimeSeconds = stats.totalDeletionTimeSeconds / stats.totalDeleted;
-    
+
     await stats.save();
 
     // Update daily stats for charts
@@ -228,7 +228,8 @@ export const messageController = {
     dailyStats.count += 1;
     dailyStats.totalDeletionTimeSeconds += deletionTimeSeconds;
     dailyStats.avgDeletionTimeSeconds = dailyStats.totalDeletionTimeSeconds / dailyStats.count;
-    
+
     await dailyStats.save();
   }
 };
+
