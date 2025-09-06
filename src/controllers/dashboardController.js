@@ -50,12 +50,13 @@ export const dashboardController = {
     ]);
 
     // AI Status counts
-    const [pendingMessages, processingMessages, completedMessages, failedMessages, expiredMessages] = await Promise.all([
+    const [pendingMessages, processingMessages, completedMessages, failedMessages, expiredMessages, pendingPrefilterMessages] = await Promise.all([
       Message.countDocuments({ ai_status: 'pending', is_valid: true }),
       Message.countDocuments({ ai_status: 'processing' }),
       Message.countDocuments({ ai_status: 'completed' }),
       Message.countDocuments({ ai_status: 'failed' }),
-      Message.countDocuments({ ai_status: 'expired' })
+      Message.countDocuments({ ai_status: 'expired' }),
+      Message.countDocuments({ pending_prefilter: true })
     ]);
 
     // Calculate messages per minute (last hour)
@@ -90,6 +91,7 @@ export const dashboardController = {
         completedMessages,
         failedMessages,
         expiredMessages,
+        pendingPrefilterMessages,
         messagesPerMinute: Math.round(messagesLastHour / 60 * 100) / 100,
         validMessagesPerMinute: Math.round(validMessagesLastHour / 60 * 100) / 100,
         messagesToday,

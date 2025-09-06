@@ -28,7 +28,8 @@ const MessageSchema = new mongoose.Schema({
     type: String,
     enum: ['pending', 'processing', 'completed', 'failed', 'expired'],
     default: 'pending'
-  }
+  },
+  pending_prefilter: { type: Boolean, default: false }
 }, {
   timestamps: true
 });
@@ -44,6 +45,7 @@ MessageSchema.index({ ai_status: 1 });
 MessageSchema.index({ createdAt: 1 });
 MessageSchema.index({ 'group.group_username': 1 });
 MessageSchema.index({ 'sender.username': 1 });
+MessageSchema.index({ pending_prefilter: 1 });
 
 // Compound index for AI processing queries
 MessageSchema.index({ is_valid: 1, ai_status: 1, createdAt: 1 });

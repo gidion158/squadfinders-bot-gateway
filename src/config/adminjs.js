@@ -129,7 +129,8 @@ export const adminJS = new AdminJS({
           'message_date',
           'is_valid',
           'is_lfg',
-          'ai_status'
+          'ai_status',
+          'pending_prefilter'
         ],
         showProperties: [
           'message_id',
@@ -145,6 +146,7 @@ export const adminJS = new AdminJS({
           'is_lfg',
           'reason',
           'ai_status',
+          'pending_prefilter',
           'createdAt',
           'updatedAt'
         ]

@@ -175,6 +175,41 @@ router.get('/unprocessed', authMiddleware, authorizeRole(['admin']), messageCont
 
 /**
  * @swagger
+ * /api/messages/pending-prefilter:
+ *   get:
+ *     summary: Get pending prefilter messages (Admin only)
+ *     tags: [Messages]
+ *     security:
+ *       - basicAuth: []
+ *     description: Returns messages with pending_prefilter flag set to true that are less than configured minutes old, sorted by creation date (oldest first). Automatically removes pending_prefilter flag from expired messages.
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *           maximum: 100
+ *         description: Maximum number of messages to return
+ *     responses:
+ *       200:
+ *         description: List of pending prefilter messages
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Message'
+ *                 count:
+ *                   type: integer
+ *                   description: Number of messages returned
+ */
+router.get('/pending-prefilter', authMiddleware, authorizeRole(['admin']), messageController.getPendingPrefilter);
+
+/**
+ * @swagger
  * /api/messages/{id}:
  *   get:
  *     summary: Get message by ID

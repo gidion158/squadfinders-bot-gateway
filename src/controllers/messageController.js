@@ -155,6 +155,39 @@ export const messageController = {
     });
   }),
 
+  // Get pending prefilter messages
+  getPendingPrefilter: handleAsyncError(async (req, res) => {
+    const { limit = 50 } = req.query;
+    const maxLimit = Math.min(parseInt(limit), 100);
+
+    // Messages older than configured minutes should be expired
+    const expiryTime = new Date(Date.now() - config.autoExpiry.expiryMinutes * 60 * 1000);
+
+    // First, expire old pending_prefilter messages
+    await Message.updateMany(
+      {
+        pending_prefilter: true,
+        message_date: { $lt: expiryTime }
+      },
+      {
+        $set: { pending_prefilter: false }
+      }
+    );
+
+    // Get recent pending_prefilter messages
+    const pendingPrefilterMessages = await Message.find({
+      pending_prefilter: true,
+      message_date: { $gte: expiryTime }
+    })
+    .sort({ message_date: 1 }) // Oldest first
+    .limit(maxLimit);
+
+    res.json({
+      data: pendingPrefilterMessages,
+      count: pendingPrefilterMessages.length
+    });
+  }),
+
   // Get message by ID or message_id
   getById: handleAsyncError(async (req, res) => {
     const { id } = req.params;
