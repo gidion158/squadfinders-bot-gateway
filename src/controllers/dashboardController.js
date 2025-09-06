@@ -135,6 +135,9 @@ export const dashboardController = {
           totalMessages: { $sum: 1 },
           validMessages: {
             $sum: { $cond: ['$is_valid', 1, 0] }
+          },
+          lfgMessages: {
+            $sum: { $cond: ['$is_lfg', 1, 0] }
           }
         }
       },
@@ -153,6 +156,7 @@ export const dashboardController = {
       ).toISOString(),
       totalCount: item.totalMessages,
       validCount: item.validMessages,
+      lfgCount: item.lfgMessages,
     }));
 
     res.json(formattedData);

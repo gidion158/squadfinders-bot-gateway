@@ -219,6 +219,13 @@ const Dashboard = (props) => {
             backgroundColor: 'rgba(67, 233, 123, 0.1)',
             tension: 0.4,
             fill: true
+          }, {
+            label: 'LFG Messages',
+            data: messagesChartData.map(item => ({ x: new Date(item.date), y: item.lfgCount })),
+            borderColor: '#f093fb',
+            backgroundColor: 'rgba(240, 147, 251, 0.1)',
+            tension: 0.4,
+            fill: true
           }]
         },
         options: {
