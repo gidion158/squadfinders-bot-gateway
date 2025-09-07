@@ -1,5 +1,6 @@
 import { Message } from '../models/Message.js';
 import { DeletedMessageStats, DailyDeletion } from '../models/DeletedMessage.js';
+import { PrefilterResult } from '../models/PrefilterResult.js';
 import { handleAsyncError } from '../utils/errorHandler.js';
 import { validateObjectId, validateMessageId } from '../utils/validators.js';
 import { config } from '../config/index.js';
@@ -222,6 +223,26 @@ export const messageController = {
 
   // Create new message
   create: handleAsyncError(async (req, res) => {
+    const { sender, message } = req.body;
+    
+    // Spam validation: Check if sender has posted the same message in the past hour
+    if (sender && sender.id && message) {
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      
+      const existingMessage = await Message.findOne({
+        'sender.id': sender.id,
+        message: message,
+        message_date: { $gte: oneHourAgo }
+      });
+      
+      if (existingMessage) {
+        return res.status(409).json({ 
+          error: 'Duplicate message detected',
+          message: 'This sender has already posted the same message within the past hour'
+        });
+      }
+    }
+    
     const message = new Message(req.body);
     await message.save();
     res.status(201).json(message);
