@@ -27,7 +27,7 @@ const MessageSchema = new mongoose.Schema({
   ai_status: {
     type: String,
     enum: ['pending', 'processing', 'completed', 'failed', 'expired', 'pending_prefilter'],
-    default: 'pending'
+    default: 'pending_prefilter'
   }
 }, {
   timestamps: true
