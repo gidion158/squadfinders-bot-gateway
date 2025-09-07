@@ -163,20 +163,20 @@ export const messageController = {
     // Messages older than configured minutes should be expired
     const expiryTime = new Date(Date.now() - config.autoExpiry.expiryMinutes * 60 * 1000);
 
-    // First, expire old pending_prefilter messages
+    // First, expire old pending_prefilter messages by changing status to expired
     await Message.updateMany(
       {
-        pending_prefilter: true,
+        ai_status: 'pending_prefilter',
         message_date: { $lt: expiryTime }
       },
       {
-        $set: { pending_prefilter: false }
+        $set: { ai_status: 'expired' }
       }
     );
 
     // Get recent pending_prefilter messages
     const pendingPrefilterMessages = await Message.find({
-      pending_prefilter: true,
+      ai_status: 'pending_prefilter',
       message_date: { $gte: expiryTime }
     })
     .sort({ message_date: 1 }) // Oldest first

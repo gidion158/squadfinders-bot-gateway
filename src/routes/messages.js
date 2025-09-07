@@ -53,7 +53,7 @@ const router = express.Router();
  *           description: Reason for the AI classification
  *         ai_status:
  *           type: string
- *           enum: [pending, processing, completed, failed, expired]
+ *           enum: [pending, processing, completed, failed, expired, pending_prefilter]
  *           default: pending
  *           description: Current AI processing status
  */
@@ -87,7 +87,7 @@ const router = express.Router();
  *         name: ai_status
  *         schema:
  *           type: string
- *           enum: [pending, processing, completed, failed, expired]
+ *           enum: [pending, processing, completed, failed, expired, pending_prefilter]
  *       - in: query
  *         name: page
  *         schema:
@@ -181,7 +181,7 @@ router.get('/unprocessed', authMiddleware, authorizeRole(['admin']), messageCont
  *     tags: [Messages]
  *     security:
  *       - basicAuth: []
- *     description: Returns messages with pending_prefilter flag set to true that are less than configured minutes old, sorted by creation date (oldest first). Automatically removes pending_prefilter flag from expired messages.
+ *     description: Returns messages with ai_status 'pending_prefilter' that are less than configured minutes old, sorted by creation date (oldest first). Automatically changes expired messages to 'expired' status.
  *     parameters:
  *       - in: query
  *         name: limit

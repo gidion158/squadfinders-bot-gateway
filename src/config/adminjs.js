@@ -111,6 +111,7 @@ export const adminJS = new AdminJS({
               { value: 'completed', label: 'Completed' },
               { value: 'failed', label: 'Failed' },
               { value: 'expired', label: 'Expired' },
+              { value: 'pending_prefilter', label: 'Pending Prefilter' },
             ],
           },
         },
@@ -130,7 +131,6 @@ export const adminJS = new AdminJS({
           'is_valid',
           'is_lfg',
           'ai_status',
-          'pending_prefilter'
         ],
         showProperties: [
           'message_id',
@@ -146,7 +146,6 @@ export const adminJS = new AdminJS({
           'is_lfg',
           'reason',
           'ai_status',
-          'pending_prefilter',
           'createdAt',
           'updatedAt'
         ]

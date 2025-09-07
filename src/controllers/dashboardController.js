@@ -56,7 +56,7 @@ export const dashboardController = {
       Message.countDocuments({ ai_status: 'completed' }),
       Message.countDocuments({ ai_status: 'failed' }),
       Message.countDocuments({ ai_status: 'expired' }),
-      Message.countDocuments({ pending_prefilter: true })
+      Message.countDocuments({ ai_status: 'pending_prefilter' })
     ]);
 
     // Calculate messages per minute (last hour)
