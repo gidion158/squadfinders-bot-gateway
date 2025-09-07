@@ -73,7 +73,7 @@ export class AutoExpiryService {
       while (true) {
         const result = await Message.updateMany(
           {
-            ai_status: 'pending',
+            ai_status: { $in: ['pending', 'pending_prefilter'] },
             message_date: { $lt: expiryTime } // Use message_date instead of createdAt
           },
           {
@@ -91,7 +91,7 @@ export class AutoExpiryService {
       }
 
       if (totalExpired > 0) {
-        console.log(`⏰ Expired ${totalExpired} old pending messages (older than ${this.expiryMinutes} minutes)`);
+        console.log(`⏰ Expired ${totalExpired} old pending/prefilter messages (older than ${this.expiryMinutes} minutes)`);
       }
     } catch (error) {
       console.error('❌ Error in auto-expiry service:', error.message);

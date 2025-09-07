@@ -174,13 +174,27 @@ export const messageController = {
       }
     );
 
-    // Get recent pending_prefilter messages
+    // Get recent pending_prefilter messages and mark them as pending
     const pendingPrefilterMessages = await Message.find({
       ai_status: 'pending_prefilter',
       message_date: { $gte: expiryTime }
     })
     .sort({ message_date: 1 }) // Oldest first
     .limit(maxLimit);
+
+    // Mark these messages as pending
+    if (pendingPrefilterMessages.length > 0) {
+      const messageIds = pendingPrefilterMessages.map(msg => msg._id);
+      await Message.updateMany(
+        { _id: { $in: messageIds } },
+        { $set: { ai_status: 'pending' } }
+      );
+
+      // Update the status in the returned data
+      pendingPrefilterMessages.forEach(msg => {
+        msg.ai_status = 'pending';
+      });
+    }
 
     res.json({
       data: pendingPrefilterMessages,
