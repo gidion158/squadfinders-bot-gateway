@@ -73,7 +73,7 @@ export class AutoExpiryService {
       while (true) {
         const result = await Message.updateMany(
           {
-            ai_status: { $in: ['pending', 'pending_prefilter'] },
+            ai_status: { $in: ['pending', 'pending_prefilter', 'processing'] },
             message_date: { $lt: expiryTime } // Use message_date instead of createdAt
           },
           {
