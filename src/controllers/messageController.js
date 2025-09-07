@@ -222,6 +222,27 @@ export const messageController = {
 
   // Create new message
   create: handleAsyncError(async (req, res) => {
+    const { sender, group, message } = req.body;
+    
+    // Spam validation: Check if the same sender in the same group has posted the exact same message in the past hour
+    if (sender && sender.id && group && group.group_id && message) {
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      
+      const existingMessage = await Message.findOne({
+        'sender.id': sender.id,
+        'group.group_id': group.group_id,
+        message: message,
+        message_date: { $gte: oneHourAgo }
+      });
+      
+      if (existingMessage) {
+        return res.status(409).json({ 
+          error: 'Duplicate message detected',
+          message: 'This sender has already posted the same message in this group within the past hour'
+        });
+      }
+    }
+    
     const newMessage = new Message(req.body);
     await newMessage.save();
     res.status(201).json(newMessage);
