@@ -116,6 +116,7 @@ export const adminJS = new AdminJS({
           },
         },
         listProperties: [
+          'message_id',
           'message_date',
           'group.group_title',
           'sender.username',
@@ -125,6 +126,7 @@ export const adminJS = new AdminJS({
           'ai_status'
         ],
         filterProperties: [
+          'message_id',
           'group.group_username',
           'sender.username',
           'message_date',
