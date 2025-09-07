@@ -2,6 +2,7 @@ import AdminJS from 'adminjs';
 import * as AdminJSMongoose from '@adminjs/mongoose';
 import { Player, Message, AdminUser } from '../models/index.js';
 import { DeletedMessageStats, DailyDeletion } from '../models/index.js';
+import { PrefilterResult } from '../models/index.js';
 import { componentLoader } from './componentLoader.js';
 
 // Register AdminJS Mongoose adapter
@@ -194,6 +195,45 @@ export const adminJS = new AdminJS({
         }
     },
     {
+      resource: PrefilterResult,
+      options: {
+        list: {
+          perPage: 100,
+        },
+        actions: viewerRole,
+        navigation: {
+          name: 'Game Data',
+          icon: 'Filter'
+        },
+        sort: {
+          sortBy: 'message_date',
+          direction: 'desc'
+        },
+        listProperties: [
+          'message_id',
+          'message_date',
+          'message',
+          'maybe_lfg',
+          'confidence'
+        ],
+        filterProperties: [
+          'message_id',
+          'message_date',
+          'maybe_lfg',
+          'confidence'
+        ],
+        showProperties: [
+          'message_id',
+          'message',
+          'message_date',
+          'maybe_lfg',
+          'confidence',
+          'createdAt',
+          'updatedAt'
+        ]
+      }
+    },
+    {
       resource: AdminUser,
       options: {
         list: {
@@ -234,6 +274,8 @@ export const adminJS = new AdminJS({
           messages: 'Messages',
           AdminUser: 'Admin User',
           adminUsers: 'Admin Users',
+          PrefilterResult: 'Prefilter Result',
+          prefilterResults: 'Prefilter Results',
           DeletedMessageStats: 'Deletion Stats',
           DailyDeletion: 'Daily Deletions'
         }

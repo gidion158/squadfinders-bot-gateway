@@ -52,6 +52,25 @@ export const playerController = {
 
   // Create new player
   create: handleAsyncError(async (req, res) => {
+    const { sender, group } = req.body;
+    
+    // Check if sender and group information is provided
+    if (sender && sender.id && group && group.group_id) {
+      // Deactivate all existing active players for this sender in this group
+      await Player.updateMany(
+        {
+          'sender.id': sender.id,
+          'group.group_id': group.group_id,
+          active: true
+        },
+        {
+          $set: { active: false }
+        }
+      );
+      
+      console.log(`Deactivated existing players for sender ${sender.id} in group ${group.group_id}`);
+    }
+    
     const player = new Player(req.body);
     await player.save();
     res.status(201).json(player);
