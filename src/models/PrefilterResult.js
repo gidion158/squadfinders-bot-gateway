@@ -36,7 +36,7 @@ const PrefilterResultSchema = new mongoose.Schema({
 });
 
 // Index for better query performance
-PrefilterResultSchema.index({ message_id: 1 });
+// PrefilterResultSchema.index({ message_id: 1 });
 PrefilterResultSchema.index({ message_date: 1 });
 PrefilterResultSchema.index({ maybe_lfg: 1 });
 PrefilterResultSchema.index({ confidence: 1 });
