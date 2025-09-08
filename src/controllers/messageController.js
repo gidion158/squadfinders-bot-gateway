@@ -3,6 +3,7 @@ import { DeletedMessageStats, DailyDeletion } from '../models/index.js';
 import { handleAsyncError } from '../utils/errorHandler.js';
 import { validateObjectId, validateMessageId } from '../utils/validators.js';
 import { config } from '../config/index.js';
+import createCsvWriter from 'csv-writer';
 
 // Helper method to update deletion statistics
 const updateDeletionStats = async (deletionTimeSeconds) => {
@@ -82,6 +83,65 @@ export const messageController = {
         pages: Math.ceil(total / parseInt(limit))
       }
     });
+  }),
+
+  // Export messages to CSV
+  export: handleAsyncError(async (req, res) => {
+    const { group_username, sender_username, is_valid, is_lfg, ai_status } = req.query;
+    const query = {};
+
+    if (group_username) query['group.group_username'] = group_username;
+    if (sender_username) query['sender.username'] = sender_username;
+    if (is_valid !== undefined) query.is_valid = is_valid === 'true';
+    if (is_lfg !== undefined) query.is_lfg = is_lfg === 'true';
+    if (ai_status) query.ai_status = ai_status;
+
+    const messages = await Message.find(query).sort({ message_date: -1 });
+
+    // Create CSV content
+    const csvWriter = createCsvWriter.createObjectCsvStringifier({
+      header: [
+        { id: 'message_id', title: 'Message ID' },
+        { id: 'message_date', title: 'Message Date' },
+        { id: 'sender_id', title: 'Sender ID' },
+        { id: 'sender_username', title: 'Sender Username' },
+        { id: 'sender_name', title: 'Sender Name' },
+        { id: 'group_id', title: 'Group ID' },
+        { id: 'group_title', title: 'Group Title' },
+        { id: 'group_username', title: 'Group Username' },
+        { id: 'message', title: 'Message' },
+        { id: 'is_valid', title: 'Is Valid' },
+        { id: 'is_lfg', title: 'Is LFG' },
+        { id: 'reason', title: 'Reason' },
+        { id: 'ai_status', title: 'AI Status' },
+        { id: 'createdAt', title: 'Created At' },
+        { id: 'updatedAt', title: 'Updated At' }
+      ]
+    });
+
+    const records = messages.map(message => ({
+      message_id: message.message_id,
+      message_date: message.message_date?.toISOString(),
+      sender_id: message.sender?.id || '',
+      sender_username: message.sender?.username || '',
+      sender_name: message.sender?.name || '',
+      group_id: message.group?.group_id || '',
+      group_title: message.group?.group_title || '',
+      group_username: message.group?.group_username || '',
+      message: message.message || '',
+      is_valid: message.is_valid,
+      is_lfg: message.is_lfg,
+      reason: message.reason || '',
+      ai_status: message.ai_status,
+      createdAt: message.createdAt?.toISOString(),
+      updatedAt: message.updatedAt?.toISOString()
+    }));
+
+    const csvContent = csvWriter.getHeaderString() + csvWriter.stringifyRecords(records);
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="messages_export_${new Date().toISOString().split('T')[0]}.csv"`);
+    res.send(csvContent);
   }),
 
   // Get valid messages since a specific timestamp
