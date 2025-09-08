@@ -192,4 +192,39 @@ router.patch('/:id', authMiddleware, authorizeRole(['admin']), prefilterResultCo
  */
 router.delete('/:id', authMiddleware, authorizeRole(['admin']), prefilterResultController.delete);
 
+/**
+ * @swagger
+ * /api/prefilter-results/export:
+ *   get:
+ *     summary: Export prefilter results to CSV
+ *     tags: [Prefilter Results]
+ *     security:
+ *       - basicAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: maybe_lfg
+ *         schema:
+ *           type: boolean
+ *       - in: query
+ *         name: min_confidence
+ *         schema:
+ *           type: number
+ *           minimum: 0.0
+ *           maximum: 1.0
+ *       - in: query
+ *         name: max_confidence
+ *         schema:
+ *           type: number
+ *           minimum: 0.0
+ *           maximum: 1.0
+ *     responses:
+ *       200:
+ *         description: CSV file download
+ *         content:
+ *           text/csv:
+ *             schema:
+ *               type: string
+ */
+router.get('/export', authMiddleware, authorizeRole(['admin', 'viewer']), prefilterResultController.export);
+
 export default router;
