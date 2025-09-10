@@ -75,6 +75,7 @@ export const playerController = {
     }
     
     const player = new Player(req.body);
+    player.active = true;
     await player.save();
     res.status(201).json(player);
   }),
