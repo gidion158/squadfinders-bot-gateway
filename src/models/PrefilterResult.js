@@ -26,9 +26,9 @@ const PrefilterResultSchema = new mongoose.Schema({
     max: 1.0,
     validate: {
       validator: function(v) {
-        return v >= 0.0 && v <= 1.0;
+        return v === -1 || v >= 0.0 && v <= 1.0;
       },
-      message: 'Confidence must be between 0.0 and 1.0'
+      message: 'Confidence must be between 0.0 and 1.0 or -1'
     }
   }
 }, {
