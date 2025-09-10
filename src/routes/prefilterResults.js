@@ -32,9 +32,9 @@ const router = express.Router();
  *           description: Whether the message might be a looking for group message
  *         confidence:
  *           type: number
- *           minimum: 0.0
+ *           minimum: -1
  *           maximum: 1.0
- *           description: Confidence score for the LFG classification
+ *           description: Confidence score for the LFG classification (-1 for unknown, 0.0-1.0 for confidence)
  */
 
 /**
@@ -54,13 +54,13 @@ const router = express.Router();
  *         name: min_confidence
  *         schema:
  *           type: number
- *           minimum: 0.0
+ *           minimum: -1
  *           maximum: 1.0
  *       - in: query
  *         name: max_confidence
  *         schema:
  *           type: number
- *           minimum: 0.0
+ *           minimum: -1
  *           maximum: 1.0
  *       - in: query
  *         name: page
@@ -191,40 +191,5 @@ router.patch('/:id', authMiddleware, authorizeRole(['admin']), prefilterResultCo
  *         description: Prefilter result deleted successfully
  */
 router.delete('/:id', authMiddleware, authorizeRole(['admin']), prefilterResultController.delete);
-
-/**
- * @swagger
- * /api/prefilter-results/export:
- *   get:
- *     summary: Export prefilter results to CSV
- *     tags: [Prefilter Results]
- *     security:
- *       - basicAuth: []
- *     parameters:
- *       - in: query
- *         name: maybe_lfg
- *         schema:
- *           type: boolean
- *       - in: query
- *         name: min_confidence
- *         schema:
- *           type: number
- *           minimum: 0.0
- *           maximum: 1.0
- *       - in: query
- *         name: max_confidence
- *         schema:
- *           type: number
- *           minimum: 0.0
- *           maximum: 1.0
- *     responses:
- *       200:
- *         description: CSV file download
- *         content:
- *           text/csv:
- *             schema:
- *               type: string
- */
-router.get('/export', authMiddleware, authorizeRole(['admin', 'viewer']), prefilterResultController.export);
 
 export default router;

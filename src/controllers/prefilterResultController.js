@@ -34,47 +34,6 @@ export const prefilterResultController = {
     });
   }),
 
-  // Export prefilter results to CSV
-  export: handleAsyncError(async (req, res) => {
-    const { maybe_lfg, min_confidence, max_confidence } = req.query;
-    const query = {};
-    
-    if (maybe_lfg !== undefined) query.maybe_lfg = maybe_lfg === 'true';
-    if (min_confidence !== undefined) query.confidence = { ...query.confidence, $gte: parseFloat(min_confidence) };
-    if (max_confidence !== undefined) query.confidence = { ...query.confidence, $lte: parseFloat(max_confidence) };
-
-    const results = await PrefilterResult.find(query).sort({ message_date: -1 });
-
-    // Create CSV content
-    const csvWriter = createCsvWriter.createObjectCsvStringifier({
-      header: [
-        { id: 'message_id', title: 'Message ID' },
-        { id: 'message', title: 'Message' },
-        { id: 'message_date', title: 'Message Date' },
-        { id: 'maybe_lfg', title: 'Maybe LFG' },
-        { id: 'confidence', title: 'Confidence' },
-        { id: 'createdAt', title: 'Created At' },
-        { id: 'updatedAt', title: 'Updated At' }
-      ]
-    });
-
-    const records = results.map(result => ({
-      message_id: result.message_id,
-      message: result.message,
-      message_date: result.message_date?.toISOString(),
-      maybe_lfg: result.maybe_lfg,
-      confidence: result.confidence,
-      createdAt: result.createdAt?.toISOString(),
-      updatedAt: result.updatedAt?.toISOString()
-    }));
-
-    const csvContent = csvWriter.getHeaderString() + csvWriter.stringifyRecords(records);
-
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename="prefilter_results_export_${new Date().toISOString().split('T')[0]}.csv"`);
-    res.send(csvContent);
-  }),
-
   // Get prefilter result by ID or message_id
   getById: handleAsyncError(async (req, res) => {
     const { id } = req.params;

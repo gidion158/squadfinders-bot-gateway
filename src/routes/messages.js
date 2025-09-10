@@ -322,44 +322,4 @@ router.patch('/:id', authMiddleware, authorizeRole(['admin']), messageController
  */
 router.delete('/:id', authMiddleware, authorizeRole(['admin']), messageController.delete);
 
-/**
- * @swagger
- * /api/messages/export:
- *   get:
- *     summary: Export messages to CSV
- *     tags: [Messages]
- *     security:
- *       - basicAuth: []
- *     parameters:
- *       - in: query
- *         name: group_username
- *         schema:
- *           type: string
- *       - in: query
- *         name: sender_username
- *         schema:
- *           type: string
- *       - in: query
- *         name: is_valid
- *         schema:
- *           type: boolean
- *       - in: query
- *         name: is_lfg
- *         schema:
- *           type: boolean
- *       - in: query
- *         name: ai_status
- *         schema:
- *           type: string
- *           enum: [pending, processing, completed, failed, expired, pending_prefilter]
- *     responses:
- *       200:
- *         description: CSV file download
- *         content:
- *           text/csv:
- *             schema:
- *               type: string
- */
-router.get('/export', authMiddleware, authorizeRole(['admin', 'viewer']), messageController.export);
-
 export default router;

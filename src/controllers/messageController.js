@@ -5,50 +5,36 @@ import { validateObjectId, validateMessageId } from '../utils/validators.js';
 import { config } from '../config/index.js';
 import createCsvWriter from 'csv-writer';
 
-// Helper method to update deletion statistics
-const updateDeletionStats = async (deletionTimeSeconds) => {
+// Helper method to update deletion statistics  
+const updateDeletionStats = async () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Use Promise.all to update both stats in parallel for better performance
+  // Update deletion counts only
   await Promise.all([
-    // Update overall stats atomically
+    // Update overall stats
     DeletedMessageStats.findOneAndUpdate(
-      {}, // Find the single stats document
+      {},
       {
         $inc: {
           totalDeleted: 1,
-          deletedToday: 1,
-          totalDeletionTimeSeconds: deletionTimeSeconds
+          deletedToday: 1
         },
         $set: { lastResetDate: today }
       },
-      { upsert: true, new: true }
-    ).then(stats => {
-      // Recalculate average after the update
-      if (stats) {
-        stats.avgDeletionTimeSeconds = stats.totalDeletionTimeSeconds / stats.totalDeleted;
-        return stats.save();
-      }
-    }),
+      { upsert: true }
+    ),
 
-    // Update daily stats for charts atomically
+    // Update daily stats
     DailyDeletion.findOneAndUpdate(
       { date: today },
       {
         $inc: {
-          count: 1,
-          totalDeletionTimeSeconds: deletionTimeSeconds
+          count: 1
         }
       },
-      { upsert: true, new: true }
-    ).then(dailyStats => {
-      // Recalculate average for the day
-      if (dailyStats) {
-        dailyStats.avgDeletionTimeSeconds = dailyStats.totalDeletionTimeSeconds / dailyStats.count;
-        return dailyStats.save();
-      }
-    })
+      { upsert: true }
+    )
   ]);
 };
 
@@ -85,65 +71,6 @@ export const messageController = {
     });
   }),
 
-  // Export messages to CSV
-  export: handleAsyncError(async (req, res) => {
-    const { group_username, sender_username, is_valid, is_lfg, ai_status } = req.query;
-    const query = {};
-
-    if (group_username) query['group.group_username'] = group_username;
-    if (sender_username) query['sender.username'] = sender_username;
-    if (is_valid !== undefined) query.is_valid = is_valid === 'true';
-    if (is_lfg !== undefined) query.is_lfg = is_lfg === 'true';
-    if (ai_status) query.ai_status = ai_status;
-
-    const messages = await Message.find(query).sort({ message_date: -1 });
-
-    // Create CSV content
-    const csvWriter = createCsvWriter.createObjectCsvStringifier({
-      header: [
-        { id: 'message_id', title: 'Message ID' },
-        { id: 'message_date', title: 'Message Date' },
-        { id: 'sender_id', title: 'Sender ID' },
-        { id: 'sender_username', title: 'Sender Username' },
-        { id: 'sender_name', title: 'Sender Name' },
-        { id: 'group_id', title: 'Group ID' },
-        { id: 'group_title', title: 'Group Title' },
-        { id: 'group_username', title: 'Group Username' },
-        { id: 'message', title: 'Message' },
-        { id: 'is_valid', title: 'Is Valid' },
-        { id: 'is_lfg', title: 'Is LFG' },
-        { id: 'reason', title: 'Reason' },
-        { id: 'ai_status', title: 'AI Status' },
-        { id: 'createdAt', title: 'Created At' },
-        { id: 'updatedAt', title: 'Updated At' }
-      ]
-    });
-
-    const records = messages.map(message => ({
-      message_id: message.message_id,
-      message_date: message.message_date?.toISOString(),
-      sender_id: message.sender?.id || '',
-      sender_username: message.sender?.username || '',
-      sender_name: message.sender?.name || '',
-      group_id: message.group?.group_id || '',
-      group_title: message.group?.group_title || '',
-      group_username: message.group?.group_username || '',
-      message: message.message || '',
-      is_valid: message.is_valid,
-      is_lfg: message.is_lfg,
-      reason: message.reason || '',
-      ai_status: message.ai_status,
-      createdAt: message.createdAt?.toISOString(),
-      updatedAt: message.updatedAt?.toISOString()
-    }));
-
-    const csvContent = csvWriter.getHeaderString() + csvWriter.stringifyRecords(records);
-
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename="messages_export_${new Date().toISOString().split('T')[0]}.csv"`);
-    res.send(csvContent);
-  }),
-
   // Get valid messages since a specific timestamp
   getValidSince: handleAsyncError(async (req, res) => {
     const { timestamp } = req.query;
@@ -172,19 +99,25 @@ export const messageController = {
     const { limit = 50 } = req.query;
     const maxLimit = Math.min(parseInt(limit), 100);
 
-    // Messages older than configured minutes should be expired
-    const expiryTime = new Date(Date.now() - config.autoExpiry.expiryMinutes * 60 * 1000);
+    // Only expire messages if auto-expiry is enabled
+    if (config.autoExpiry.enabled) {
+      const expiryTime = new Date(Date.now() - config.autoExpiry.expiryMinutes * 60 * 1000);
+      
+      // First, expire old pending messages
+      await Message.updateMany(
+        {
+          ai_status: 'pending',
+          message_date: { $lt: expiryTime }
+        },
+        {
+          $set: { ai_status: 'expired' }
+        }
+      );
+    }
 
-    // First, expire old pending messages
-    await Message.updateMany(
-      {
-        ai_status: 'pending',
-        message_date: { $lt: expiryTime }
-      },
-      {
-        $set: { ai_status: 'expired' }
-      }
-    );
+    const expiryTime = config.autoExpiry.enabled 
+      ? new Date(Date.now() - config.autoExpiry.expiryMinutes * 60 * 1000)
+      : new Date(0); // If disabled, get all messages
 
     // Get recent pending messages and mark them as processing
     const recentPendingMessages = await Message.find({
@@ -220,19 +153,25 @@ export const messageController = {
     const { limit = 50 } = req.query;
     const maxLimit = Math.min(parseInt(limit), 100);
 
-    // Messages older than configured minutes should be expired
-    const expiryTime = new Date(Date.now() - config.autoExpiry.expiryMinutes * 60 * 1000);
+    // Only expire messages if auto-expiry is enabled
+    if (config.autoExpiry.enabled) {
+      const expiryTime = new Date(Date.now() - config.autoExpiry.expiryMinutes * 60 * 1000);
+      
+      // First, expire old pending_prefilter messages by changing status to expired
+      await Message.updateMany(
+        {
+          ai_status: 'pending_prefilter',
+          message_date: { $lt: expiryTime }
+        },
+        {
+          $set: { ai_status: 'expired' }
+        }
+      );
+    }
 
-    // First, expire old pending_prefilter messages by changing status to expired
-    await Message.updateMany(
-      {
-        ai_status: 'pending_prefilter',
-        message_date: { $lt: expiryTime }
-      },
-      {
-        $set: { ai_status: 'expired' }
-      }
-    );
+    const expiryTime = config.autoExpiry.enabled 
+      ? new Date(Date.now() - config.autoExpiry.expiryMinutes * 60 * 1000)
+      : new Date(0); // If disabled, get all messages
 
     // Get recent pending_prefilter messages and mark them as pending
     const pendingPrefilterMessages = await Message.find({
@@ -348,11 +287,8 @@ export const messageController = {
         return res.status(404).json({ error: 'Message not found' });
     }
 
-    // Calculate deletion time in seconds
-    const deletionTimeSeconds = Math.round((Date.now() - message.message_date.getTime()) / 1000);
-
-    // Update deletion statistics by calling the local helper function
-    await updateDeletionStats(deletionTimeSeconds);
+    // Update deletion statistics
+    await updateDeletionStats();
 
     // Delete the original message
     if (validateObjectId(id)) {
@@ -363,10 +299,7 @@ export const messageController = {
 
     res.json({
       message: 'Message deleted successfully',
-      deletion_analytics: {
-        deletion_time_seconds: deletionTimeSeconds,
-        deleted_at: new Date()
-      }
+      deleted_at: new Date()
     });
   }),
 };

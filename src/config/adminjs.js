@@ -45,7 +45,7 @@ export const adminJS = new AdminJS({
       resource: Player,
       options: {
         list: {
-          perPage: 100,
+          perPage: 50,
         },
         actions: viewerRole,
         navigation: {
@@ -97,7 +97,7 @@ export const adminJS = new AdminJS({
       resource: Message,
       options: {
         list: {
-          perPage: 100,
+          perPage: 50,
         },
         actions: viewerRole,
         navigation: {
@@ -198,7 +198,7 @@ export const adminJS = new AdminJS({
       resource: PrefilterResult,
       options: {
         list: {
-          perPage: 100,
+          perPage: 50,
         },
         actions: viewerRole,
         navigation: {
@@ -237,7 +237,7 @@ export const adminJS = new AdminJS({
       resource: AdminUser,
       options: {
         list: {
-            perPage: 100,
+            perPage: 50,
         },
         actions: adminRole,
         navigation: {

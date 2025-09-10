@@ -5,11 +5,8 @@ const Dashboard = (props) => {
   const [platformDistribution, setPlatformDistribution] = useState([]);
   const [aiStatusDistribution, setAIStatusDistribution] = useState([]);
   const [messagesChartData, setMessagesChartData] = useState([]);
-  const [deletionChartData, setDeletionChartData] = useState([]);
-  const [timeRange, setTimeRange] = useState('24h');
-  const [deletionTimeRange, setDeletionTimeRange] = useState('7d');
+  const [globalTimeRange, setGlobalTimeRange] = useState('24h');
   const [messagesChartInstance, setMessagesChartInstance] = useState(null);
-  const [deletionChartInstance, setDeletionChartInstance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -32,14 +29,12 @@ const Dashboard = (props) => {
         statsResponse,
         platformResponse,
         aiStatusResponse,
-        messagesChartResponse,
-        deletionChartResponse
+        messagesChartResponse
       ] = await Promise.all([
         fetch('/api/dashboard/stats', fetchOptions),
         fetch('/api/dashboard/platform-distribution', fetchOptions),
         fetch('/api/dashboard/ai-status-distribution', fetchOptions),
-        fetch(`/api/dashboard/messages-chart?timeframe=${timeRange}`, fetchOptions),
-        fetch(`/api/deleted-messages/chart?timeframe=${deletionTimeRange}`, fetchOptions)
+        fetch(`/api/dashboard/messages-chart?timeframe=${globalTimeRange}`, fetchOptions)
       ]);
 
       if (!statsResponse.ok) {
@@ -60,9 +55,6 @@ const Dashboard = (props) => {
       const chartData = await messagesChartResponse.json();
       setMessagesChartData(chartData);
 
-      if (!deletionChartResponse.ok) throw new Error('Failed to fetch deletion chart data');
-      const deletionData = await deletionChartResponse.json();
-      setDeletionChartData(deletionData);
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -77,7 +69,6 @@ const Dashboard = (props) => {
       setLoading(false);
     };
     initialFetch();
-  }, [timeRange, deletionTimeRange]);
 
   // Auto-refresh functionality
   useEffect(() => {
@@ -92,7 +83,13 @@ const Dashboard = (props) => {
   }, [autoRefresh, refreshInterval]);
 
   useEffect(() => {
-    if (!loading && !error) {
+    const initialFetch = async () => {
+      setLoading(true);
+      await fetchData();
+      setLoading(false);
+    };
+    initialFetch();
+  }, [globalTimeRange]);
       const loadScript = (src, onLoad) => {
         const script = document.createElement('script');
         script.src = src;
@@ -456,68 +453,25 @@ const Dashboard = (props) => {
       React.createElement('div', { key: 'messagesChartContainer', style: { backgroundColor: 'white', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0' }}, [
         React.createElement('div', { key: 'chart-header', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}, [
           React.createElement('h3', { key: 'title', style: { color: '#333', fontSize: '18px', fontWeight: '600', margin: 0 }}, 'Messages Over Time'),
-          React.createElement('div', { key: 'buttons' },
-            timeButtons.map(btn => React.createElement('button', {
-              key: btn.value,
-              onClick: () => setTimeRange(btn.value),
-              style: {
-                background: timeRange === btn.value ? '#667eea' : '#f8f9fa',
-                color: timeRange === btn.value ? 'white' : '#333',
-                border: '1px solid #e2e8f0', 
-                padding: '8px 12px', 
-                marginLeft: '5px', 
-                borderRadius: '6px', 
-                cursor: 'pointer', 
-                fontWeight: '500'
-              }
-            }, btn.label)),
-            React.createElement('button', {
-              key: 'reset-zoom',
-              onClick: () => messagesChartInstance && messagesChartInstance.resetZoom(),
-              style: {
-                background: '#f8f9fa', 
-                color: '#333', 
-                border: '1px solid #e2e8f0', 
-                padding: '8px 12px', 
-                marginLeft: '10px', 
-                borderRadius: '6px', 
-                cursor: 'pointer', 
-                fontWeight: '500'
-              }
-            }, 'Reset Zoom')
-          )
+          React.createElement('button', {
+            key: 'reset-zoom',
+            onClick: () => messagesChartInstance && messagesChartInstance.resetZoom(),
+            style: {
+              background: '#f8f9fa', 
+              color: '#333', 
+              border: '1px solid #e2e8f0', 
+              padding: '8px 12px', 
+              borderRadius: '6px', 
+              cursor: 'pointer', 
+              fontWeight: '500'
+            }
+          }, 'Reset Zoom')
         ]),
         React.createElement('div', { key: 'canvas-container', style: { height: '350px', position: 'relative' }}, 
           React.createElement('canvas', { id: 'messagesChart', style: { width: '100%', height: '100%' } })
         )
       ]),
 
-      // Deletion Rate Chart
-      React.createElement('div', { key: 'deletionChartContainer', style: { backgroundColor: 'white', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0' }}, [
-        React.createElement('div', { key: 'chart-header', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}, [
-          React.createElement('h3', { key: 'title', style: { color: '#333', fontSize: '18px', fontWeight: '600', margin: 0 }}, 'Message Deletion Rate'),
-          React.createElement('div', { key: 'buttons' },
-            deletionTimeButtons.map(btn => React.createElement('button', {
-              key: btn.value,
-              onClick: () => setDeletionTimeRange(btn.value),
-              style: {
-                background: deletionTimeRange === btn.value ? '#ff6b6b' : '#f8f9fa',
-                color: deletionTimeRange === btn.value ? 'white' : '#333',
-                border: '1px solid #e2e8f0', 
-                padding: '8px 12px', 
-                marginLeft: '5px', 
-                borderRadius: '6px', 
-                cursor: 'pointer', 
-                fontWeight: '500'
-              }
-            }, btn.label))
-          )
-        ]),
-        React.createElement('div', { key: 'canvas-container', style: { height: '350px', position: 'relative' }}, 
-          React.createElement('canvas', { id: 'deletionChart', style: { width: '100%', height: '100%' } })
-        )
-      ]),
-      
       // Charts Row
       React.createElement('div', { key: 'chartsRow', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}, [
         // Platform Distribution Chart
