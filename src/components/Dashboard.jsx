@@ -1,21 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, BarElement } from 'chart.js';
-import { Line, Doughnut, Bar } from 'react-chartjs-2';
-import 'chartjs-adapter-date-fns';
-import zoomPlugin from 'chartjs-plugin-zoom';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  zoomPlugin
-);
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
@@ -75,90 +58,6 @@ const Dashboard = () => {
       unknown: '#9ca3af'
     };
     return colors[status] || '#9ca3af';
-  };
-
-  const messagesChartData = messagesChart ? {
-    labels: messagesChart.map(item => new Date(item.date).toLocaleString()),
-    datasets: [
-      {
-        label: 'Total Messages',
-        data: messagesChart.map(item => item.totalCount),
-        borderColor: '#3b82f6',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        tension: 0.4,
-      },
-      {
-        label: 'Valid Messages',
-        data: messagesChart.map(item => item.validCount),
-        borderColor: '#10b981',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        tension: 0.4,
-      },
-      {
-        label: 'LFG Messages',
-        data: messagesChart.map(item => item.lfgCount),
-        borderColor: '#f59e0b',
-        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-        tension: 0.4,
-      }
-    ]
-  } : null;
-
-  const platformChartData = platformDistribution ? {
-    labels: platformDistribution.map(item => item._id || 'Unknown'),
-    datasets: [{
-      data: platformDistribution.map(item => item.count),
-      backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
-      borderWidth: 2,
-      borderColor: '#ffffff'
-    }]
-  } : null;
-
-  const aiStatusChartData = aiStatusDistribution ? {
-    labels: aiStatusDistribution.map(item => item._id || 'Unknown'),
-    datasets: [{
-      data: aiStatusDistribution.map(item => item.count),
-      backgroundColor: aiStatusDistribution.map(item => getStatusColor(item._id)),
-      borderWidth: 2,
-      borderColor: '#ffffff'
-    }]
-  } : null;
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      zoom: {
-        zoom: {
-          wheel: {
-            enabled: true,
-          },
-          pinch: {
-            enabled: true
-          },
-          mode: 'x',
-        },
-        pan: {
-          enabled: true,
-          mode: 'x',
-        }
-      }
-    },
-    scales: {
-      x: {
-        type: 'time',
-        time: {
-          displayFormats: {
-            minute: 'HH:mm',
-            hour: 'HH:mm',
-            day: 'MMM dd'
-          }
-        }
-      }
-    }
   };
 
   if (loading) {
@@ -250,7 +149,7 @@ const Dashboard = () => {
         </select>
       </div>
 
-      {/* Charts */}
+      {/* Simple Charts Placeholder */}
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', 
@@ -264,8 +163,8 @@ const Dashboard = () => {
           boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
         }}>
           <h3 style={{ marginTop: 0, color: '#1f2937' }}>Messages Over Time</h3>
-          <div style={{ height: '300px' }}>
-            {messagesChartData && <Line data={messagesChartData} options={chartOptions} />}
+          <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb', borderRadius: '4px' }}>
+            <p style={{ color: '#6b7280' }}>Chart data: {messagesChart?.length || 0} points</p>
           </div>
         </div>
 
@@ -278,7 +177,17 @@ const Dashboard = () => {
         }}>
           <h3 style={{ marginTop: 0, color: '#1f2937' }}>Platform Distribution</h3>
           <div style={{ height: '300px' }}>
-            {platformChartData && <Doughnut data={platformChartData} options={{ responsive: true, maintainAspectRatio: false }} />}
+            {platformDistribution?.map((item, index) => (
+              <div key={index} style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                padding: '10px 0',
+                borderBottom: '1px solid #e5e7eb'
+              }}>
+                <span>{item._id || 'Unknown'}</span>
+                <strong>{formatNumber(item.count)}</strong>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -291,7 +200,27 @@ const Dashboard = () => {
         }}>
           <h3 style={{ marginTop: 0, color: '#1f2937' }}>AI Processing Status</h3>
           <div style={{ height: '300px' }}>
-            {aiStatusChartData && <Doughnut data={aiStatusChartData} options={{ responsive: true, maintainAspectRatio: false }} />}
+            {aiStatusDistribution?.map((item, index) => (
+              <div key={index} style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                padding: '10px 0',
+                borderBottom: '1px solid #e5e7eb'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <div style={{ 
+                    width: '12px', 
+                    height: '12px', 
+                    backgroundColor: getStatusColor(item._id),
+                    borderRadius: '50%',
+                    marginRight: '8px'
+                  }}></div>
+                  <span>{item._id || 'Unknown'}</span>
+                </div>
+                <strong>{formatNumber(item.count)}</strong>
+              </div>
+            ))}
           </div>
         </div>
       </div>
