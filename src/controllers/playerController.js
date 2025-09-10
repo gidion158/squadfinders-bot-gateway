@@ -35,64 +35,6 @@ export const playerController = {
     });
   }),
 
-  // Export players to CSV
-  export: handleAsyncError(async (req, res) => {
-    const { active, platform } = req.query;
-    const query = {};
-    
-    if (active !== undefined) query.active = active === 'true';
-    if (platform) query.platform = platform;
-
-    const players = await Player.find(query).sort({ message_date: -1 });
-
-    // Create CSV content
-    const csvWriter = createCsvWriter.createObjectCsvStringifier({
-      header: [
-        { id: 'message_id', title: 'Message ID' },
-        { id: 'message_date', title: 'Message Date' },
-        { id: 'sender_id', title: 'Sender ID' },
-        { id: 'sender_username', title: 'Sender Username' },
-        { id: 'sender_name', title: 'Sender Name' },
-        { id: 'group_id', title: 'Group ID' },
-        { id: 'group_title', title: 'Group Title' },
-        { id: 'group_username', title: 'Group Username' },
-        { id: 'message', title: 'Message' },
-        { id: 'platform', title: 'Platform' },
-        { id: 'rank', title: 'Rank' },
-        { id: 'players_count', title: 'Players Count' },
-        { id: 'game_mode', title: 'Game Mode' },
-        { id: 'active', title: 'Active' },
-        { id: 'createdAt', title: 'Created At' },
-        { id: 'updatedAt', title: 'Updated At' }
-      ]
-    });
-
-    const records = players.map(player => ({
-      message_id: player.message_id,
-      message_date: player.message_date?.toISOString(),
-      sender_id: player.sender?.id || '',
-      sender_username: player.sender?.username || '',
-      sender_name: player.sender?.name || '',
-      group_id: player.group?.group_id || '',
-      group_title: player.group?.group_title || '',
-      group_username: player.group?.group_username || '',
-      message: player.message || '',
-      platform: player.platform,
-      rank: player.rank,
-      players_count: player.players_count,
-      game_mode: player.game_mode,
-      active: player.active,
-      createdAt: player.createdAt?.toISOString(),
-      updatedAt: player.updatedAt?.toISOString()
-    }));
-
-    const csvContent = csvWriter.getHeaderString() + csvWriter.stringifyRecords(records);
-
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename="players_export_${new Date().toISOString().split('T')[0]}.csv"`);
-    res.send(csvContent);
-  }),
-
   // Get player by ID or message_id
   getById: handleAsyncError(async (req, res) => {
     const { id } = req.params;

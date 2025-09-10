@@ -16,8 +16,7 @@ export const deletedMessageController = {
 
     res.json({
       totalDeleted: stats.totalDeleted,
-      deletedToday: stats.deletedToday,
-      avgDeletionTimeSeconds: Math.round(stats.avgDeletionTimeSeconds * 100) / 100
+      deletedToday: stats.deletedToday
     });
   }),
 
@@ -32,8 +31,7 @@ export const deletedMessageController = {
 
     const formattedData = dailyStats.map(item => ({
       date: item.date.toISOString().split('T')[0],
-      count: item.count,
-      avgDeletionTimeSeconds: Math.round(item.avgDeletionTimeSeconds * 100) / 100
+      count: item.count
     }));
 
     res.json(formattedData);
@@ -71,8 +69,7 @@ export const deletedMessageController = {
 
     const formattedData = dailyStats.map(item => ({
       date: item.date.toISOString(),
-      count: item.count,
-      avgDeletionTimeSeconds: Math.round(item.avgDeletionTimeSeconds * 100) / 100
+      count: item.count
     }));
 
     res.json(formattedData);

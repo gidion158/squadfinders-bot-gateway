@@ -202,32 +202,4 @@ router.patch('/:id', authMiddleware, authorizeRole(['admin']), playerController.
  */
 router.delete('/:id', authMiddleware, authorizeRole(['admin']), playerController.delete);
 
-/**
- * @swagger
- * /api/players/export:
- *   get:
- *     summary: Export players to CSV
- *     tags: [Players]
- *     security:
- *       - basicAuth: []
- *     parameters:
- *       - in: query
- *         name: active
- *         schema:
- *           type: boolean
- *       - in: query
- *         name: platform
- *         schema:
- *           type: string
- *           enum: [PC, Console, unknown]
- *     responses:
- *       200:
- *         description: CSV file download
- *         content:
- *           text/csv:
- *             schema:
- *               type: string
- */
-router.get('/export', authMiddleware, authorizeRole(['admin', 'viewer']), playerController.export);
-
 export default router;

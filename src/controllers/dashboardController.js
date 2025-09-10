@@ -96,15 +96,14 @@ export const dashboardController = {
         validMessagesPerMinute: Math.round(validMessagesLastHour / 60 * 100) / 100,
         messagesToday,
         validMessagesToday,
-        deletedToday: deletionStats?.deletedToday || 0,
-        avgDeletionTimeSeconds: Math.round((deletionStats?.avgDeletionTimeSeconds || 0) * 100) / 100
+        deletedToday: deletionStats?.deletedToday || 0
       }
     });
   }),
 
   // Get messages over time for charts
   getMessagesChartData: handleAsyncError(async (req, res) => {
-    const { timeframe = '60m' } = req.query;
+    const { timeframe = '24h' } = req.query;
     const startDate = parseTimeframe(timeframe);
 
     // Determine the appropriate grouping based on the timeframe

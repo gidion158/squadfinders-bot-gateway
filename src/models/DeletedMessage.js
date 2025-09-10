@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const DeletedMessageStatsSchema = new mongoose.Schema({
-  // Simple counter schema - just track counts and stats
+  // Simple counter schema - just track counts
   totalDeleted: {
     type: Number,
     default: 0
@@ -13,15 +13,6 @@ const DeletedMessageStatsSchema = new mongoose.Schema({
   lastResetDate: {
     type: Date,
     default: Date.now
-  },
-  totalDeletionTimeSeconds: {
-    type: Number,
-    default: 0
-  },
-  // For calculating average deletion time per second
-  avgDeletionTimeSeconds: {
-    type: Number,
-    default: 0
   }
 }, {
   timestamps: true
@@ -35,14 +26,6 @@ const DailyDeletionSchema = new mongoose.Schema({
     unique: true
   },
   count: {
-    type: Number,
-    default: 0
-  },
-  totalDeletionTimeSeconds: {
-    type: Number,
-    default: 0
-  },
-  avgDeletionTimeSeconds: {
     type: Number,
     default: 0
   }
