@@ -171,7 +171,7 @@ export const dashboardController = {
       {
         $group: {
           _id: '$platform',
-          count: { $sum: 1 }
+          count: { $sum:1 }
         }
       }
     ]);
