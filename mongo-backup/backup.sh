@@ -10,14 +10,14 @@ docker exec -it finder-mongo mongodump --host localhost --port 27017 --username 
 # Check if the backup directory was created
 if [ -d "$BACKUP_DIR" ]; then
     echo "Backup directory created: $BACKUP_DIR"
-    
+
     # Compress the backup directory to a tar.gz file
     tar -czf $BACKUP_FILE -C /data/backup $(basename $BACKUP_DIR)
-    
+
     # Check if compression was successful
     if [ -f "$BACKUP_FILE" ]; then
         echo "Backup compressed to: $BACKUP_FILE"
-        
+
         # Delete the original backup directory
         rm -rf $BACKUP_DIR
         echo "Original backup directory removed."
