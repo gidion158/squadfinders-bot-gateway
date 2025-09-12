@@ -9,10 +9,7 @@ export const gamingGroupController = {
       .sort({ name: 1 });
 
     res.json({
-      groups: groups.map(group => ({
-        id: group._id,
-        name: group.name
-      }))
+      groups: groups.map(group => group.name)
     });
   })
 };
