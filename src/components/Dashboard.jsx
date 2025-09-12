@@ -144,13 +144,13 @@ const Dashboard = (props) => {
                     backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe']
                 }]
             },
-            options: { 
-              responsive: true, 
-              maintainAspectRatio: false, 
-              plugins: { 
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
                 legend: { position: 'bottom' },
                 title: { display: true, text: 'Platform Distribution' }
-              } 
+              }
             }
         });
     }
@@ -167,11 +167,11 @@ const Dashboard = (props) => {
           'pending_prefilter': { label: 'Pending Prefilter', color: '#9c88ff' },
           'unknown': { label: 'Unknown', color: '#cccccc' }
         };
-        
+
         const labels = [];
         const colors = [];
         const data = [];
-        
+
         aiStatusDistribution.forEach(item => {
           const status = item._id;
           const config = statusConfig[status] || { label: 'Other', color: '#999999' };
@@ -179,7 +179,7 @@ const Dashboard = (props) => {
           colors.push(config.color);
           data.push(item.count);
         });
-        
+
         new window.Chart(aiStatusCtx, {
             type: 'doughnut',
             data: {
@@ -189,13 +189,13 @@ const Dashboard = (props) => {
                     backgroundColor: colors
                 }]
             },
-            options: { 
-              responsive: true, 
-              maintainAspectRatio: false, 
-              plugins: { 
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
                 legend: { position: 'bottom' },
                 title: { display: true, text: 'AI Processing Status' }
-              } 
+              }
             }
         });
     }
@@ -368,7 +368,7 @@ const Dashboard = (props) => {
 
   return React.createElement('div', { style: { padding: '20px', backgroundColor: '#f8f9fa', minHeight: '100vh' }}, [
     React.createElement('style', { key: 'styles' }, `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`),
-    
+
     // Header with auto-refresh controls
     React.createElement('div', { key: 'header', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' }}, [
       React.createElement('h1', { key: 'title', style: { margin: 0, color: '#333', fontSize: '28px', fontWeight: 'bold' }}, 'SquadFinders Dashboard'),
@@ -388,7 +388,7 @@ const Dashboard = (props) => {
           value: refreshInterval,
           onChange: (e) => setRefreshInterval(parseInt(e.target.value)),
           style: { padding: '6px 10px', borderRadius: '4px', border: '1px solid #ddd', fontSize: '14px' }
-        }, refreshIntervals.map(interval => 
+        }, refreshIntervals.map(interval =>
           React.createElement('option', { key: interval.value, value: interval.value }, interval.label)
         )),
         React.createElement('button', {
@@ -407,7 +407,7 @@ const Dashboard = (props) => {
         }, '🔄 Refresh')
       ])
     ]),
-    
+
     // Statistics Grid
     React.createElement('div', { key: 'stats', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '40px' }}, [
       React.createElement(StatBox, { key: 'players', title: 'Total Players', value: stats?.players || 0, color: '#667eea', icon: '👥' }),
@@ -428,7 +428,7 @@ const Dashboard = (props) => {
       React.createElement(StatBox, { key: 'deletedMessages', title: 'Total Deleted', value: stats?.deletedMessages || 0, color: '#ff6b6b', icon: '🗑️' }),
       React.createElement(StatBox, { key: 'deletedToday', title: 'Deleted Today', value: stats?.deletedToday || 0, color: '#ff8a80', icon: '📅' })
     ]),
-    
+
     // Charts Grid
     React.createElement('div', { key: 'charts', style: { display: 'grid', gridTemplateColumns: '1fr', gap: '30px' }}, [
       // Messages Over Time Chart
@@ -442,11 +442,11 @@ const Dashboard = (props) => {
               style: {
                 background: timeRange === btn.value ? '#667eea' : '#f8f9fa',
                 color: timeRange === btn.value ? 'white' : '#333',
-                border: '1px solid #e2e8f0', 
-                padding: '8px 12px', 
-                marginLeft: '5px', 
-                borderRadius: '6px', 
-                cursor: 'pointer', 
+                border: '1px solid #e2e8f0',
+                padding: '8px 12px',
+                marginLeft: '5px',
+                borderRadius: '6px',
+                cursor: 'pointer',
                 fontWeight: '500'
               }
             }, btn.label)),
@@ -454,19 +454,19 @@ const Dashboard = (props) => {
               key: 'reset-zoom',
               onClick: () => messagesChartInstance && messagesChartInstance.resetZoom(),
               style: {
-                background: '#f8f9fa', 
-                color: '#333', 
-                border: '1px solid #e2e8f0', 
-                padding: '8px 12px', 
-                marginLeft: '10px', 
-                borderRadius: '6px', 
-                cursor: 'pointer', 
+                background: '#f8f9fa',
+                color: '#333',
+                border: '1px solid #e2e8f0',
+                padding: '8px 12px',
+                marginLeft: '10px',
+                borderRadius: '6px',
+                cursor: 'pointer',
                 fontWeight: '500'
               }
             }, 'Reset Zoom')
           )
         ]),
-        React.createElement('div', { key: 'canvas-container', style: { height: '350px', position: 'relative' }}, 
+        React.createElement('div', { key: 'canvas-container', style: { height: '350px', position: 'relative' }},
           React.createElement('canvas', { id: 'messagesChart', style: { width: '100%', height: '100%' } })
         )
       ]),
@@ -482,35 +482,35 @@ const Dashboard = (props) => {
               style: {
                 background: deletionTimeRange === btn.value ? '#ff6b6b' : '#f8f9fa',
                 color: deletionTimeRange === btn.value ? 'white' : '#333',
-                border: '1px solid #e2e8f0', 
-                padding: '8px 12px', 
-                marginLeft: '5px', 
-                borderRadius: '6px', 
-                cursor: 'pointer', 
+                border: '1px solid #e2e8f0',
+                padding: '8px 12px',
+                marginLeft: '5px',
+                borderRadius: '6px',
+                cursor: 'pointer',
                 fontWeight: '500'
               }
             }, btn.label))
           )
         ]),
-        React.createElement('div', { key: 'canvas-container', style: { height: '350px', position: 'relative' }}, 
+        React.createElement('div', { key: 'canvas-container', style: { height: '350px', position: 'relative' }},
           React.createElement('canvas', { id: 'deletionChart', style: { width: '100%', height: '100%' } })
         )
       ]),
-      
+
       // Charts Row
       React.createElement('div', { key: 'chartsRow', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}, [
         // Platform Distribution Chart
         React.createElement('div', { key: 'platformChartContainer', style: { backgroundColor: 'white', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0' }}, [
           React.createElement('h3', { key: 'title', style: { marginBottom: '20px', color: '#333', fontSize: '18px', fontWeight: '600' }}, 'Platform Distribution'),
-          React.createElement('div', { key: 'canvas-container', style: { height: '300px', position: 'relative' }}, 
+          React.createElement('div', { key: 'canvas-container', style: { height: '300px', position: 'relative' }},
             React.createElement('canvas', { id: 'platformChart', style: { width: '100%', height: '100%' } })
           )
         ]),
-        
+
         // AI Status Distribution Chart
         React.createElement('div', { key: 'aiStatusChartContainer', style: { backgroundColor: 'white', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0' }}, [
           React.createElement('h3', { key: 'title', style: { marginBottom: '20px', color: '#333', fontSize: '18px', fontWeight: '600' }}, 'AI Processing Status'),
-          React.createElement('div', { key: 'canvas-container', style: { height: '300px', position: 'relative' }}, 
+          React.createElement('div', { key: 'canvas-container', style: { height: '300px', position: 'relative' }},
             React.createElement('canvas', { id: 'aiStatusChart', style: { width: '100%', height: '100%' } })
           )
         ])
@@ -523,13 +523,13 @@ const StatBox = ({ title, value, color, icon, isDecimal = false }) => {
   const displayValue = isDecimal ? (typeof value === 'number' ? value.toFixed(2) : value) : (typeof value === 'number' ? value.toLocaleString() : value);
   return React.createElement('div', {
     style: {
-      backgroundColor: 'white', 
-      padding: '20px', 
-      borderRadius: '12px', 
+      backgroundColor: 'white',
+      padding: '20px',
+      borderRadius: '12px',
       boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-      border: '1px solid #e2e8f0', 
-      borderLeft: `4px solid ${color}`, 
-      transition: 'transform 0.2s ease, box-shadow 0.2s ease', 
+      border: '1px solid #e2e8f0',
+      borderLeft: `4px solid ${color}`,
+      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
       cursor: 'default'
     },
     onMouseEnter: (e) => {
