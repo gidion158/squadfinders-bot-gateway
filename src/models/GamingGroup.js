@@ -17,6 +17,6 @@ const GamingGroupSchema = new mongoose.Schema({
 
 // Index for better query performance
 GamingGroupSchema.index({ active: 1 });
-GamingGroupSchema.index({ name: 1 });
+// GamingGroupSchema.index({ name: 1 });
 
 export const GamingGroup = mongoose.model('GamingGroup', GamingGroupSchema);
