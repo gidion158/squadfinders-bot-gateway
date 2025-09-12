@@ -292,6 +292,14 @@ const Dashboard = (props) => {
             backgroundColor: 'rgba(255, 107, 107, 0.1)',
             tension: 0.4,
             fill: true
+          }, {
+            label: 'Avg Deletion Time (seconds)',
+            data: deletionChartData.map(item => ({ x: new Date(item.date), y: item.avgDeletionTimeSeconds })),
+            borderColor: '#ffa726',
+            backgroundColor: 'rgba(255, 167, 38, 0.1)',
+            tension: 0.4,
+            fill: false,
+            yAxisID: 'y1'
           }]
         },
         options: {
@@ -314,6 +322,18 @@ const Dashboard = (props) => {
                 display: true,
                 text: 'Deleted Count'
               }
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              title: {
+                display: true,
+                text: 'Avg Time (seconds)'
+              },
+              grid: {
+                drawOnChartArea: false,
+              },
             }
           },
           plugins: {
@@ -426,7 +446,8 @@ const Dashboard = (props) => {
       React.createElement(StatBox, { key: 'messagesPerMin', title: 'Messages/Min', value: stats?.messagesPerMinute || 0, color: '#667eea', icon: '⚡', isDecimal: true }),
       React.createElement(StatBox, { key: 'validMessagesPerMin', title: 'Valid/Min', value: stats?.validMessagesPerMinute || 0, color: '#43e97b', icon: '📈', isDecimal: true }),
       React.createElement(StatBox, { key: 'deletedMessages', title: 'Total Deleted', value: stats?.deletedMessages || 0, color: '#ff6b6b', icon: '🗑️' }),
-      React.createElement(StatBox, { key: 'deletedToday', title: 'Deleted Today', value: stats?.deletedToday || 0, color: '#ff8a80', icon: '📅' })
+      React.createElement(StatBox, { key: 'deletedToday', title: 'Deleted Today', value: stats?.deletedToday || 0, color: '#ff8a80', icon: '📅' }),
+      React.createElement(StatBox, { key: 'avgDeletionTime', title: 'Avg Deletion Time', value: `${stats?.avgDeletionTimeSeconds || 0}s`, color: '#ffa726', icon: '⏱️' })
     ]),
     
     // Charts Grid

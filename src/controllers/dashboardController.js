@@ -52,9 +52,10 @@ export const dashboardController = {
       Message.countDocuments({ is_valid: true })
     ]);
 
-    // AI Status counts (all time)
-    const [pendingMessages, completedMessages, failedMessages, expiredMessages, pendingPrefilterMessages] = await Promise.all([
+    // AI Status counts (all time) - added processingMessages back for old dashboard
+    const [pendingMessages, processingMessages, completedMessages, failedMessages, expiredMessages, pendingPrefilterMessages] = await Promise.all([
       Message.countDocuments({ ai_status: 'pending', is_valid: true }),
+      Message.countDocuments({ ai_status: 'processing' }),
       Message.countDocuments({ ai_status: 'completed' }),
       Message.countDocuments({ ai_status: 'failed' }),
       Message.countDocuments({ ai_status: 'expired' }),
@@ -92,6 +93,7 @@ export const dashboardController = {
         lfgMessages,
         validMessages,
         pendingMessages,
+        processingMessages,
         completedMessages,
         failedMessages,
         expiredMessages,
