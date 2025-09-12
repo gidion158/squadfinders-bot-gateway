@@ -410,24 +410,43 @@ const Dashboard = (props) => {
     
     // Statistics Grid
     React.createElement('div', { key: 'stats', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '40px' }}, [
-      React.createElement(StatBox, { key: 'players', title: 'Total Players', value: stats?.players || 0, color: '#667eea', icon: '👥' }),
-      React.createElement(StatBox, { key: 'messages', title: 'Total Messages', value: stats?.messages || 0, color: '#764ba2', icon: '💬' }),
-      React.createElement(StatBox, { key: 'validMessages', title: 'Valid Messages', value: stats?.validMessages || 0, color: '#43e97b', icon: '✅' }),
-      React.createElement(StatBox, { key: 'lfgMessages', title: 'LFG Messages', value: stats?.lfgMessages || 0, color: '#f093fb', icon: '🎮' }),
-      React.createElement(StatBox, { key: 'activePlayers', title: 'Active Players', value: stats?.activePlayers || 0, color: '#00f2fe', icon: '🟢' }),
-      React.createElement(StatBox, { key: 'pendingMessages', title: 'Pending Messages', value: stats?.pendingMessages || 0, color: '#ffd93d', icon: '⏳' }),
-      React.createElement(StatBox, { key: 'processingMessages', title: 'Processing Messages', value: stats?.processingMessages || 0, color: '#6bcf7f', icon: '⚙️' }),
-      React.createElement(StatBox, { key: 'completedMessages', title: 'Completed Messages', value: stats?.completedMessages || 0, color: '#4d96ff', icon: '✅' }),
-      React.createElement(StatBox, { key: 'failedMessages', title: 'Failed Messages', value: stats?.failedMessages || 0, color: '#ff6b6b', icon: '❌' }),
-      React.createElement(StatBox, { key: 'expiredMessages', title: 'Expired Messages', value: stats?.expiredMessages || 0, color: '#a8a8a8', icon: '⏰' }),
-      React.createElement(StatBox, { key: 'pendingPrefilterMessages', title: 'Pending Prefilter', value: stats?.pendingPrefilterMessages || 0, color: '#9c88ff', icon: '🔍' }),
-      React.createElement(StatBox, { key: 'messagesToday', title: 'Messages Today', value: stats?.messagesToday || 0, color: '#38ef7d', icon: '📅' }),
-      React.createElement(StatBox, { key: 'validMessagesToday', title: 'Valid Today', value: stats?.validMessagesToday || 0, color: '#a8edea', icon: '✨' }),
-      React.createElement(StatBox, { key: 'messagesPerMin', title: 'Messages/Min', value: stats?.messagesPerMinute || 0, color: '#667eea', icon: '⚡', isDecimal: true }),
-      React.createElement(StatBox, { key: 'validMessagesPerMin', title: 'Valid/Min', value: stats?.validMessagesPerMinute || 0, color: '#43e97b', icon: '📈', isDecimal: true }),
-      React.createElement(StatBox, { key: 'deletedMessages', title: 'Total Deleted', value: stats?.deletedMessages || 0, color: '#ff6b6b', icon: '🗑️' }),
-      React.createElement(StatBox, { key: 'deletedToday', title: 'Deleted Today', value: stats?.deletedToday || 0, color: '#ff8a80', icon: '📅' })
-    ]),
+      // Overview Section
+      React.createElement('div', { key: 'overview-section', style: { gridColumn: '1 / -1', marginBottom: '20px' }}, [
+        React.createElement('h2', { key: 'overview-title', style: { margin: '0 0 15px 0', color: '#333', fontSize: '20px', fontWeight: '600', borderBottom: '2px solid #667eea', paddingBottom: '8px' }}, '📊 Overview'),
+        React.createElement('div', { key: 'overview-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}, [
+          React.createElement(StatBox, { key: 'players', title: 'Total Players', value: stats?.players || 0, color: '#667eea', icon: '👥', category: 'overview' }),
+          React.createElement(StatBox, { key: 'messages', title: 'Total Messages', value: stats?.messages || 0, color: '#764ba2', icon: '💬', category: 'overview' }),
+          React.createElement(StatBox, { key: 'validMessages', title: 'Valid Messages', value: stats?.validMessages || 0, color: '#43e97b', icon: '✅', category: 'overview' }),
+          React.createElement(StatBox, { key: 'lfgMessages', title: 'LFG Messages', value: stats?.lfgMessages || 0, color: '#f093fb', icon: '🎮', category: 'overview' }),
+          React.createElement(StatBox, { key: 'activePlayers', title: 'Active Players', value: stats?.activePlayers || 0, color: '#00f2fe', icon: '🟢', category: 'overview' })
+        ])
+      ]),
+      
+      // AI Processing Section
+      React.createElement('div', { key: 'ai-section', style: { gridColumn: '1 / -1', marginBottom: '20px' }}, [
+        React.createElement('h2', { key: 'ai-title', style: { margin: '0 0 15px 0', color: '#333', fontSize: '20px', fontWeight: '600', borderBottom: '2px solid #9c88ff', paddingBottom: '8px' }}, '🤖 AI Processing Status'),
+        React.createElement('div', { key: 'ai-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}, [
+          React.createElement(StatBox, { key: 'pendingPrefilterMessages', title: 'Pending Prefilter', value: stats?.pendingPrefilterMessages || 0, color: '#9c88ff', icon: '🔍', category: 'ai' }),
+          React.createElement(StatBox, { key: 'pendingMessages', title: 'Pending AI', value: stats?.pendingMessages || 0, color: '#ffd93d', icon: '⏳', category: 'ai' }),
+          React.createElement(StatBox, { key: 'processingMessages', title: 'Processing', value: stats?.processingMessages || 0, color: '#6bcf7f', icon: '⚙️', category: 'ai' }),
+          React.createElement(StatBox, { key: 'completedMessages', title: 'Completed', value: stats?.completedMessages || 0, color: '#4d96ff', icon: '✅', category: 'ai' }),
+          React.createElement(StatBox, { key: 'failedMessages', title: 'Failed', value: stats?.failedMessages || 0, color: '#ff6b6b', icon: '❌', category: 'ai' }),
+          React.createElement(StatBox, { key: 'expiredMessages', title: 'Expired', value: stats?.expiredMessages || 0, color: '#a8a8a8', icon: '⏰', category: 'ai' })
+        ])
+      ]),
+      
+      // Activity Section
+      React.createElement('div', { key: 'activity-section', style: { gridColumn: '1 / -1', marginBottom: '20px' }}, [
+        React.createElement('h2', { key: 'activity-title', style: { margin: '0 0 15px 0', color: '#333', fontSize: '20px', fontWeight: '600', borderBottom: '2px solid #38ef7d', paddingBottom: '8px' }}, '📈 Activity & Performance'),
+        React.createElement('div', { key: 'activity-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}, [
+          React.createElement(StatBox, { key: 'messagesToday', title: 'Messages Today', value: stats?.messagesToday || 0, color: '#38ef7d', icon: '📅', category: 'activity' }),
+          React.createElement(StatBox, { key: 'validMessagesToday', title: 'Valid Today', value: stats?.validMessagesToday || 0, color: '#a8edea', icon: '✨', category: 'activity' }),
+          React.createElement(StatBox, { key: 'messagesPerMin', title: 'Messages/Min', value: stats?.messagesPerMinute || 0, color: '#667eea', icon: '⚡', isDecimal: true, category: 'activity' }),
+          React.createElement(StatBox, { key: 'validMessagesPerMin', title: 'Valid/Min', value: stats?.validMessagesPerMinute || 0, color: '#43e97b', icon: '📈', isDecimal: true, category: 'activity' }),
+          React.createElement(StatBox, { key: 'deletedMessages', title: 'Total Deleted', value: stats?.deletedMessages || 0, color: '#ff6b6b', icon: '🗑️', category: 'activity' }),
+          React.createElement(StatBox, { key: 'deletedToday', title: 'Deleted Today', value: stats?.deletedToday || 0, color: '#ff8a80', icon: '📅', category: 'activity' })
+        ])
+      ])
     
     // Charts Grid
     React.createElement('div', { key: 'charts', style: { display: 'grid', gridTemplateColumns: '1fr', gap: '30px' }}, [
@@ -519,35 +538,45 @@ const Dashboard = (props) => {
   ]);
 };
 
-const StatBox = ({ title, value, color, icon, isDecimal = false }) => {
+const StatBox = ({ title, value, color, icon, isDecimal = false, category = 'default' }) => {
   const displayValue = isDecimal ? (typeof value === 'number' ? value.toFixed(2) : value) : (typeof value === 'number' ? value.toLocaleString() : value);
+  
+  const categoryStyles = {
+    overview: { backgroundColor: '#f8faff', borderColor: color },
+    ai: { backgroundColor: '#faf9ff', borderColor: color },
+    activity: { backgroundColor: '#f8fff9', borderColor: color },
+    default: { backgroundColor: 'white', borderColor: color }
+  };
+  
+  const currentStyle = categoryStyles[category] || categoryStyles.default;
+  
   return React.createElement('div', {
     style: {
-      backgroundColor: 'white', 
-      padding: '20px', 
+      backgroundColor: currentStyle.backgroundColor, 
+      padding: '18px', 
       borderRadius: '12px', 
-      boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-      border: '1px solid #e2e8f0', 
-      borderLeft: `4px solid ${color}`, 
+      boxShadow: '0 3px 8px rgba(0,0,0,0.08)',
+      border: `2px solid ${currentStyle.borderColor}`, 
       transition: 'transform 0.2s ease, box-shadow 0.2s ease', 
-      cursor: 'default'
+      cursor: 'default',
+      position: 'relative'
     },
     onMouseEnter: (e) => {
       const target = e.currentTarget;
       target.style.transform = 'translateY(-2px)';
-      target.style.boxShadow = '0 8px 15px rgba(0,0,0,0.15)';
+      target.style.boxShadow = '0 6px 20px rgba(0,0,0,0.12)';
     },
     onMouseLeave: (e) => {
       const target = e.currentTarget;
       target.style.transform = 'translateY(0)';
-      target.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+      target.style.boxShadow = '0 3px 8px rgba(0,0,0,0.08)';
     }
   }, [
-    React.createElement('div', { key: 'header', style: { display: 'flex', alignItems: 'center', marginBottom: '12px' }}, [
-      React.createElement('span', { key: 'icon', style: { fontSize: '20px', marginRight: '8px' }}, icon),
-      React.createElement('h3', { key: 'title', style: { margin: 0, fontSize: '12px', color: '#666', textTransform: 'uppercase', fontWeight: '600', letterSpacing: '0.5px' }}, title)
+    React.createElement('div', { key: 'header', style: { display: 'flex', alignItems: 'center', marginBottom: '14px' }}, [
+      React.createElement('span', { key: 'icon', style: { fontSize: '24px', marginRight: '10px' }}, icon),
+      React.createElement('h3', { key: 'title', style: { margin: 0, fontSize: '13px', color: '#555', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.8px', lineHeight: '1.2' }}, title)
     ]),
-    React.createElement('div', { key: 'value', style: { fontSize: '24px', fontWeight: 'bold', color: color, lineHeight: '1' }}, displayValue)
+    React.createElement('div', { key: 'value', style: { fontSize: '28px', fontWeight: '800', color: color, lineHeight: '1', textAlign: 'left' }}, displayValue)
   ]);
 };
 
