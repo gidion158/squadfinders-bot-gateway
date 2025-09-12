@@ -447,6 +447,8 @@ const Dashboard = (props) => {
           React.createElement(StatBox, { key: 'deletedToday', title: 'Deleted Today', value: stats?.deletedToday || 0, color: '#ff8a80', icon: '📅', category: 'activity' })
         ])
       ])
+    ]
+    )
     
     // Charts Grid
     React.createElement('div', { key: 'charts', style: { display: 'grid', gridTemplateColumns: '1fr', gap: '30px' }}, [
