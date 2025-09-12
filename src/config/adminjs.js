@@ -249,6 +249,11 @@ export const adminJS = new AdminJS({
           sortBy: 'name',
           direction: 'asc'
         },
+        properties: {
+          name: {
+            description: 'You can add group username or link like IRANR6SGP OR t.me/+9pHPhzzBoc8wNTM8 OR t.me/IRANR6SGP'
+          }
+        },
         listProperties: [
           'name',
           'active',
