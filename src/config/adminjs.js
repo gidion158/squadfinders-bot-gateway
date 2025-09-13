@@ -4,6 +4,7 @@ import { Player, Message, AdminUser } from '../models/index.js';
 import { DeletedMessageStats, DailyDeletion } from '../models/index.js';
 import { PrefilterResult } from '../models/index.js';
 import { GamingGroup } from '../models/index.js';
+import { UserSeen } from '../models/index.js';
 import { componentLoader } from './componentLoader.js';
 
 // Register AdminJS Mongoose adapter
@@ -273,6 +274,49 @@ export const adminJS = new AdminJS({
       }
     },
     {
+      resource: UserSeen,
+      options: {
+        list: {
+          perPage: 50,
+        },
+        actions: {
+          new: { isAccessible: false },
+          edit: { isAccessible: false },
+          delete: { isAccessible: false },
+          bulkDelete: { isAccessible: false },
+          list: { isAccessible: true },
+          show: { isAccessible: true },
+        },
+        navigation: {
+          name: 'Game Data',
+          icon: 'Eye'
+        },
+        sort: {
+          sortBy: 'updatedAt',
+          direction: 'desc'
+        },
+        listProperties: [
+          'user_id',
+          'username',
+          'active',
+          'updatedAt'
+        ],
+        filterProperties: [
+          'user_id',
+          'username',
+          'active'
+        ],
+        showProperties: [
+          'user_id',
+          'username',
+          'seen_ids',
+          'active',
+          'createdAt',
+          'updatedAt'
+        ]
+      }
+    },
+    {
       resource: AdminUser,
       options: {
         list: {
@@ -318,7 +362,9 @@ export const adminJS = new AdminJS({
           DeletedMessageStats: 'Deletion Stats',
           DailyDeletion: 'Daily Deletions',
           GamingGroup: 'Gaming Group',
-          gamingGroups: 'Gaming Groups'
+          gamingGroups: 'Gaming Groups',
+          UserSeen: 'User Seen',
+          userSeens: 'User Seen'
         }
       }
     }
