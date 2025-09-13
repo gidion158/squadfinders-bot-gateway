@@ -26,5 +26,15 @@ export const config = {
     enabled: process.env.AUTO_EXPIRY_ENABLED !== 'false', // Default true
     expiryMinutes: parseInt(process.env.EXPIRY_MINUTES) || 5, // Default 5 minutes
     intervalMinutes: parseInt(process.env.EXPIRY_INTERVAL_MINUTES) || 1, // Default 1 minute
+  },
+  userSeenCleanup: {
+    enabled: process.env.USER_SEEN_CLEANUP_ENABLED !== 'false', // Default true
+    disableAfterHours: parseInt(process.env.USER_SEEN_DISABLE_AFTER_HOURS) || 2, // Default 2 hours
+    intervalHours: parseInt(process.env.USER_SEEN_CLEANUP_INTERVAL_HOURS) || 12, // Default 12 hours
+  },
+  playerCleanup: {
+    enabled: process.env.PLAYER_CLEANUP_ENABLED !== 'false', // Default true
+    disableAfterHours: parseInt(process.env.PLAYER_DISABLE_AFTER_HOURS) || 6, // Default 6 hours
+    intervalHours: parseInt(process.env.PLAYER_CLEANUP_INTERVAL_HOURS) || 12, // Default 12 hours
   }
 };

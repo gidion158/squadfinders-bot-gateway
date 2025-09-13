@@ -4,4 +4,7 @@ export * from './AdminUser.js';
 export * from './DeletedMessage.js';
 export * from './PrefilterResult.js';
 export * from './GamingGroup.js';
+export * from './UserSeen.js';
+export * from './CanceledUser.js';
+export * from './UserMessage.js';
 

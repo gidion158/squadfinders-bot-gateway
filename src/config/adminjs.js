@@ -4,6 +4,8 @@ import { Player, Message, AdminUser } from '../models/index.js';
 import { DeletedMessageStats, DailyDeletion } from '../models/index.js';
 import { PrefilterResult } from '../models/index.js';
 import { GamingGroup } from '../models/index.js';
+import { UserSeen } from '../models/index.js';
+import { CanceledUser, UserMessage } from '../models/index.js';
 import { componentLoader } from './componentLoader.js';
 
 // Register AdminJS Mongoose adapter
@@ -273,6 +275,125 @@ export const adminJS = new AdminJS({
       }
     },
     {
+      resource: UserSeen,
+      options: {
+        list: {
+          perPage: 50,
+        },
+        actions: {
+          new: { isAccessible: false },
+          edit: { isAccessible: false },
+          delete: { isAccessible: false },
+          bulkDelete: { isAccessible: false },
+          list: { isAccessible: true },
+          show: { isAccessible: true },
+        },
+        navigation: {
+          name: 'Game Data',
+          icon: 'Eye'
+        },
+        sort: {
+          sortBy: 'updatedAt',
+          direction: 'desc'
+        },
+        listProperties: [
+          'user_id',
+          'username',
+          'active',
+          'updatedAt'
+        ],
+        filterProperties: [
+          'user_id',
+          'username',
+          'active'
+        ],
+        showProperties: [
+          'user_id',
+          'username',
+          'seen_ids',
+          'active',
+          'createdAt',
+          'updatedAt'
+        ]
+      }
+    },
+    {
+      resource: CanceledUser,
+      options: {
+        list: {
+          perPage: 50,
+        },
+        actions: adminRole,
+        navigation: {
+          name: 'Game Data',
+          icon: 'UserX'
+        },
+        sort: {
+          sortBy: 'createdAt',
+          direction: 'desc'
+        },
+        listProperties: [
+          'user_id',
+          'username',
+          'createdAt',
+          'updatedAt'
+        ],
+        filterProperties: [
+          'user_id',
+          'username'
+        ],
+        showProperties: [
+          'user_id',
+          'username',
+          'createdAt',
+          'updatedAt'
+        ]
+      }
+    },
+    {
+      resource: UserMessage,
+      options: {
+        list: {
+          perPage: 50,
+        },
+        actions: {
+          new: { isAccessible: false },
+          edit: { isAccessible: false },
+          delete: { isAccessible: false },
+          bulkDelete: { isAccessible: false },
+          list: { isAccessible: true },
+          show: { isAccessible: true },
+        },
+        navigation: {
+          name: 'Game Data',
+          icon: 'MessageCircle'
+        },
+        sort: {
+          sortBy: 'message_date',
+          direction: 'desc'
+        },
+        listProperties: [
+          'user_id',
+          'username',
+          'message_date',
+          'message'
+        ],
+        filterProperties: [
+          'user_id',
+          'username',
+          'message_date'
+        ],
+        showProperties: [
+          'user_id',
+          'username',
+          'message_date',
+          'message',
+          'createdAt',
+          'updatedAt'
+        ]
+      }
+    },
+    {
       resource: AdminUser,
       options: {
         list: {
@@ -318,7 +439,13 @@ export const adminJS = new AdminJS({
           DeletedMessageStats: 'Deletion Stats',
           DailyDeletion: 'Daily Deletions',
           GamingGroup: 'Gaming Group',
-          gamingGroups: 'Gaming Groups'
+          gamingGroups: 'Gaming Groups',
+          UserSeen: 'User Seen',
+          userSeens: 'User Seen',
+          CanceledUser: 'Canceled User',
+          canceledUsers: 'Canceled Users',
+          UserMessage: 'User Message',
+          userMessages: 'User Messages'
         }
       }
     }

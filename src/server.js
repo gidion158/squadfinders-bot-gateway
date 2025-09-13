@@ -12,6 +12,7 @@ import { authMiddleware } from './middleware/auth.js';
 import apiRoutes from './routes/index.js';
 import { AdminUser } from './models/index.js';
 import { autoExpiryService } from './services/autoExpiry.js';
+import { cleanupService } from './services/cleanupService.js';
 
 // Initialize Express app
 const app = express();
@@ -121,17 +122,22 @@ app.listen(PORT, () => {
   if (config.autoExpiry.enabled) {
     autoExpiryService.start(); // Use configured interval
   }
+  
+  // Start cleanup services
+  cleanupService.startAll();
 });
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, shutting down gracefully');
   autoExpiryService.stop();
+  cleanupService.stopAll();
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
   console.log('SIGINT received, shutting down gracefully');
   autoExpiryService.stop();
+  cleanupService.stopAll();
   process.exit(0);
 });
