@@ -6,6 +6,8 @@ import dashboardRoutes from './dashboard.js';
 import deletedMessageRoutes from './deletedMessages.js';
 import prefilterResultRoutes from './prefilterResults.js';
 import gamingGroupRoutes from './gamingGroups.js';
+import canceledUserRoutes from './canceledUsers.js';
+import userMessageRoutes from './userMessages.js';
 
 const router = express.Router();
 
@@ -17,5 +19,7 @@ router.use('/dashboard', dashboardRoutes);
 router.use('/deleted-messages', deletedMessageRoutes);
 router.use('/prefilter-results', prefilterResultRoutes);
 router.use('/gaming-groups', gamingGroupRoutes);
+router.use('/canceled-users', canceledUserRoutes);
+router.use('/user-messages', userMessageRoutes);
 
 export default router;
