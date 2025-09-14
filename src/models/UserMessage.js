@@ -22,7 +22,7 @@ const UserMessageSchema = new mongoose.Schema({
 });
 
 // Index for better query performance
-UserMessageSchema.index({ user_id: 1 });
+// UserMessageSchema.index({ user_id: 1 });
 UserMessageSchema.index({ username: 1 });
 UserMessageSchema.index({ message_date: 1 });
 

@@ -15,7 +15,7 @@ const CanceledUserSchema = new mongoose.Schema({
 });
 
 // Index for better query performance
-CanceledUserSchema.index({ user_id: 1 });
+// CanceledUserSchema.index({ user_id: 1 });
 CanceledUserSchema.index({ username: 1 });
 
 export const CanceledUser = mongoose.model('CanceledUser', CanceledUserSchema);
