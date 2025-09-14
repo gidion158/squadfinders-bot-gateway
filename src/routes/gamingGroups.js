@@ -48,6 +48,6 @@ const router = express.Router();
  *                       name:
  *                         type: string
  */
-router.get('/', authMiddleware, authorizeRole(['admin', 'viewer']), gamingGroupController.getActiveGroups);
+router.get('/', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), gamingGroupController.getActiveGroups);
 
 export default router;

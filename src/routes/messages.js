@@ -102,7 +102,7 @@ const router = express.Router();
  *       200:
  *         description: List of messages with pagination
  */
-router.get('/', authMiddleware, authorizeRole(['admin', 'viewer']), messageController.getAll);
+router.get('/', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), messageController.getAll);
 
 /**
  * @swagger
@@ -136,7 +136,7 @@ router.get('/', authMiddleware, authorizeRole(['admin', 'viewer']), messageContr
  *       400:
  *         description: Invalid or missing timestamp.
  */
-router.get('/valid-since', authMiddleware, authorizeRole(['admin', 'viewer']), messageController.getValidSince);
+router.get('/valid-since', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), messageController.getValidSince);
 
 /**
  * @swagger
@@ -171,7 +171,7 @@ router.get('/valid-since', authMiddleware, authorizeRole(['admin', 'viewer']), m
  *                   type: integer
  *                   description: Number of messages returned
  */
-router.get('/unprocessed', authMiddleware, authorizeRole(['admin']), messageController.getUnprocessed);
+router.get('/unprocessed', authMiddleware, authorizeRole(['superadmin', 'admin']), messageController.getUnprocessed);
 
 /**
  * @swagger
@@ -206,7 +206,7 @@ router.get('/unprocessed', authMiddleware, authorizeRole(['admin']), messageCont
  *                   type: integer
  *                   description: Number of messages returned
  */
-router.get('/pending-prefilter', authMiddleware, authorizeRole(['admin']), messageController.getPendingPrefilter);
+router.get('/pending-prefilter', authMiddleware, authorizeRole(['superadmin', 'admin']), messageController.getPendingPrefilter);
 
 /**
  * @swagger
@@ -228,7 +228,7 @@ router.get('/pending-prefilter', authMiddleware, authorizeRole(['admin']), messa
  *       404:
  *         description: Message not found
  */
-router.get('/:id', authMiddleware, authorizeRole(['admin', 'viewer']), messageController.getById);
+router.get('/:id', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), messageController.getById);
 
 /**
  * @swagger
@@ -248,7 +248,7 @@ router.get('/:id', authMiddleware, authorizeRole(['admin', 'viewer']), messageCo
  *       201:
  *         description: Message created successfully
  */
-router.post('/', authMiddleware, authorizeRole(['admin']), messageController.create);
+router.post('/', authMiddleware, authorizeRole(['superadmin', 'admin']), messageController.create);
 
 /**
  * @swagger
@@ -274,7 +274,7 @@ router.post('/', authMiddleware, authorizeRole(['admin']), messageController.cre
  *       200:
  *         description: Message updated successfully
  */
-router.put('/:id', authMiddleware, authorizeRole(['admin']), messageController.update);
+router.put('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), messageController.update);
 
 /**
  * @swagger
@@ -300,7 +300,7 @@ router.put('/:id', authMiddleware, authorizeRole(['admin']), messageController.u
  *       200:
  *         description: Message updated successfully
  */
-router.patch('/:id', authMiddleware, authorizeRole(['admin']), messageController.update);
+router.patch('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), messageController.update);
 
 /**
  * @swagger
@@ -320,6 +320,6 @@ router.patch('/:id', authMiddleware, authorizeRole(['admin']), messageController
  *       200:
  *         description: Message deleted successfully
  */
-router.delete('/:id', authMiddleware, authorizeRole(['admin']), messageController.delete);
+router.delete('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), messageController.delete);
 
 export default router;

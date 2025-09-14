@@ -86,8 +86,7 @@ const router = express.Router();
  *       200:
  *         description: List of players with pagination
  */
-router.get('/', authMiddleware, authorizeRole(['admin', 'viewer']), playerController.getAll);
-
+router.get('/', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), playerController.getAll);
 /**
  * @swagger
  * /api/players/{id}:
@@ -108,7 +107,7 @@ router.get('/', authMiddleware, authorizeRole(['admin', 'viewer']), playerContro
  *       404:
  *         description: Player not found
  */
-router.get('/:id', authMiddleware, authorizeRole(['admin', 'viewer']), playerController.getById);
+router.get('/:id', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), playerController.getById);
 
 /**
  * @swagger
@@ -128,7 +127,7 @@ router.get('/:id', authMiddleware, authorizeRole(['admin', 'viewer']), playerCon
  *       201:
  *         description: Player created successfully
  */
-router.post('/', authMiddleware, authorizeRole(['admin']), playerController.create);
+router.post('/', authMiddleware, authorizeRole(['superadmin', 'admin']), playerController.create);
 
 /**
  * @swagger
@@ -154,7 +153,7 @@ router.post('/', authMiddleware, authorizeRole(['admin']), playerController.crea
  *       200:
  *         description: Player updated successfully
  */
-router.put('/:id', authMiddleware, authorizeRole(['admin']), playerController.update);
+router.put('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), playerController.update);
 
 /**
  * @swagger
@@ -180,7 +179,7 @@ router.put('/:id', authMiddleware, authorizeRole(['admin']), playerController.up
  *       200:
  *         description: Player updated successfully
  */
-router.patch('/:id', authMiddleware, authorizeRole(['admin']), playerController.update);
+router.patch('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), playerController.update);
 
 /**
  * @swagger
@@ -200,6 +199,6 @@ router.patch('/:id', authMiddleware, authorizeRole(['admin']), playerController.
  *       200:
  *         description: Player deleted successfully
  */
-router.delete('/:id', authMiddleware, authorizeRole(['admin']), playerController.delete);
+router.delete('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), playerController.delete);
 
 export default router;

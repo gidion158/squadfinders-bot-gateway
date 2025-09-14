@@ -26,15 +26,15 @@ const run = async () => {
   if (args.length !== 3) {
     console.error("Usage: node src/scripts/createUser.js <email> <password> <role>");
     console.error("Example: node src/scripts/createUser.js admin@example.com mypassword admin");
-    console.error("Roles: admin, viewer");
+    console.error("Roles: superadmin, admin, viewer");
     return;
   }
 
   const [email, password, role] = args;
 
   // Validate the role
-  if (!['admin', 'viewer'].includes(role)) {
-    console.error(`❌ Error: Invalid role "${role}". Role must be either 'admin' or 'viewer'.`);
+  if (!['superadmin', 'admin', 'viewer'].includes(role)) {
+    console.error(`❌ Error: Invalid role "${role}". Role must be either 'superadmin', 'admin' or 'viewer'.`);
     return;
   }
 

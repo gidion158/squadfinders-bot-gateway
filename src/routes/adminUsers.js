@@ -55,7 +55,7 @@ const router = express.Router();
  *       200:
  *         description: List of admin users with pagination
  */
-router.get('/', authMiddleware, authorizeRole(['admin']), adminUserController.getAll);
+router.get('/', authMiddleware, authorizeRole(['superadmin']), adminUserController.getAll);
 
 /**
  * @swagger
@@ -77,7 +77,7 @@ router.get('/', authMiddleware, authorizeRole(['admin']), adminUserController.ge
  *       404:
  *         description: Admin user not found
  */
-router.get('/:id', authMiddleware, authorizeRole(['admin']), adminUserController.getById);
+router.get('/:id', authMiddleware, authorizeRole(['superadmin']), adminUserController.getById);
 
 /**
  * @swagger
@@ -97,7 +97,7 @@ router.get('/:id', authMiddleware, authorizeRole(['admin']), adminUserController
  *       201:
  *         description: Admin user created successfully
  */
-router.post('/', authMiddleware, authorizeRole(['admin']), adminUserController.create);
+router.post('/', authMiddleware, authorizeRole(['superadmin']), adminUserController.create);
 
 /**
  * @swagger
@@ -123,7 +123,7 @@ router.post('/', authMiddleware, authorizeRole(['admin']), adminUserController.c
  *       200:
  *         description: Admin user updated successfully
  */
-router.put('/:id', authMiddleware, authorizeRole(['admin']), adminUserController.update);
+router.put('/:id', authMiddleware, authorizeRole(['superadmin']), adminUserController.update);
 
 /**
  * @swagger
@@ -149,7 +149,7 @@ router.put('/:id', authMiddleware, authorizeRole(['admin']), adminUserController
  *       200:
  *         description: Admin user updated successfully
  */
-router.patch('/:id', authMiddleware, authorizeRole(['admin']), adminUserController.update);
+router.patch('/:id', authMiddleware, authorizeRole(['superadmin']), adminUserController.update);
 
 /**
  * @swagger
@@ -169,6 +169,6 @@ router.patch('/:id', authMiddleware, authorizeRole(['admin']), adminUserControll
  *       200:
  *         description: Admin user deleted successfully
  */
-router.delete('/:id', authMiddleware, authorizeRole(['admin']), adminUserController.delete);
+router.delete('/:id', authMiddleware, authorizeRole(['superadmin']), adminUserController.delete);
 
 export default router;

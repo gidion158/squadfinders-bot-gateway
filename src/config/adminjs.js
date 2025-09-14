@@ -12,24 +12,34 @@ import { componentLoader } from './componentLoader.js';
 AdminJS.registerAdapter(AdminJSMongoose);
 
 // Role-based access control
-const isAdmin = ({ currentAdmin }) => currentAdmin && currentAdmin.role === 'admin';
+const isSuperAdmin = ({ currentAdmin }) => currentAdmin && currentAdmin.role === 'superadmin';
+const isAdmin = ({ currentAdmin }) => currentAdmin && ['superadmin', 'admin'].includes(currentAdmin.role);
 
 const viewerRole = {
-  new: { isAccessible: isAdmin },
-  edit: { isAccessible: isAdmin },
-  delete: { isAccessible: isAdmin },
-  bulkDelete: { isAccessible: isAdmin },
+  new: { isAccessible: isSuperAdmin },
+  edit: { isAccessible: isSuperAdmin },
+  delete: { isAccessible: isSuperAdmin },
+  bulkDelete: { isAccessible: isSuperAdmin },
   list: { isAccessible: true },
   show: { isAccessible: true },
 };
 
 const adminRole = {
-  new: { isAccessible: isAdmin },
-  edit: { isAccessible: isAdmin },
-  delete: { isAccessible: isAdmin },
-  bulkDelete: { isAccessible: isAdmin },
-  list: { isAccessible: isAdmin },
-  show: { isAccessible: isAdmin },
+  new: { isAccessible: isSuperAdmin },
+  edit: { isAccessible: isSuperAdmin },
+  delete: { isAccessible: isSuperAdmin },
+  bulkDelete: { isAccessible: isSuperAdmin },
+  list: { isAccessible: true },
+  show: { isAccessible: true },
+};
+
+const superAdminRole = {
+  new: { isAccessible: isSuperAdmin },
+  edit: { isAccessible: isSuperAdmin },
+  delete: { isAccessible: isSuperAdmin },
+  bulkDelete: { isAccessible: isSuperAdmin },
+  list: { isAccessible: isSuperAdmin },
+  show: { isAccessible: isSuperAdmin },
 };
 
 export const adminJS = new AdminJS({
@@ -399,7 +409,7 @@ export const adminJS = new AdminJS({
         list: {
             perPage: 50,
         },
-        actions: adminRole,
+        actions: superAdminRole,
         navigation: {
           name: 'Administration',
           icon: 'Shield'
@@ -409,6 +419,14 @@ export const adminJS = new AdminJS({
           direction: 'desc'
         },
         properties: {
+          role: {
+            isVisible: {
+              list: true,
+              show: true,
+              edit: isSuperAdmin,
+              filter: true
+            }
+          },
           password: {
             isVisible: {
               list: false,

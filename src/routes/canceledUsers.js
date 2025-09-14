@@ -48,7 +48,7 @@ const router = express.Router();
  *       200:
  *         description: List of canceled users with pagination
  */
-router.get('/', authMiddleware, authorizeRole(['admin', 'viewer']), canceledUserController.getAll);
+router.get('/', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), canceledUserController.getAll);
 
 /**
  * @swagger
@@ -80,7 +80,7 @@ router.get('/', authMiddleware, authorizeRole(['admin', 'viewer']), canceledUser
  *                 user:
  *                   $ref: '#/components/schemas/CanceledUser'
  */
-router.get('/is-canceled', authMiddleware, authorizeRole(['admin', 'viewer']), canceledUserController.isCanceled);
+router.get('/is-canceled', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), canceledUserController.isCanceled);
 
 /**
  * @swagger
@@ -102,7 +102,7 @@ router.get('/is-canceled', authMiddleware, authorizeRole(['admin', 'viewer']), c
  *       404:
  *         description: Canceled user not found
  */
-router.get('/:id', authMiddleware, authorizeRole(['admin', 'viewer']), canceledUserController.getById);
+router.get('/:id', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), canceledUserController.getById);
 
 /**
  * @swagger
@@ -122,7 +122,7 @@ router.get('/:id', authMiddleware, authorizeRole(['admin', 'viewer']), canceledU
  *       201:
  *         description: Canceled user created successfully
  */
-router.post('/', authMiddleware, authorizeRole(['admin']), canceledUserController.create);
+router.post('/', authMiddleware, authorizeRole(['superadmin', 'admin']), canceledUserController.create);
 
 /**
  * @swagger
@@ -148,7 +148,7 @@ router.post('/', authMiddleware, authorizeRole(['admin']), canceledUserControlle
  *       200:
  *         description: Canceled user updated successfully
  */
-router.put('/:id', authMiddleware, authorizeRole(['admin']), canceledUserController.update);
+router.put('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), canceledUserController.update);
 
 /**
  * @swagger
@@ -174,7 +174,7 @@ router.put('/:id', authMiddleware, authorizeRole(['admin']), canceledUserControl
  *       200:
  *         description: Canceled user updated successfully
  */
-router.patch('/:id', authMiddleware, authorizeRole(['admin']), canceledUserController.update);
+router.patch('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), canceledUserController.update);
 
 /**
  * @swagger
@@ -194,6 +194,6 @@ router.patch('/:id', authMiddleware, authorizeRole(['admin']), canceledUserContr
  *       200:
  *         description: Canceled user deleted successfully
  */
-router.delete('/:id', authMiddleware, authorizeRole(['admin']), canceledUserController.delete);
+router.delete('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), canceledUserController.delete);
 
 export default router;
