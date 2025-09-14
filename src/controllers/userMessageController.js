@@ -74,5 +74,22 @@ export const userMessageController = {
     }
 
     res.json(message);
+  }),
+
+  // Delete user message
+  delete: handleAsyncError(async (req, res) => {
+    const { id } = req.params;
+
+    if (!validateObjectId(id)) {
+      return res.status(400).json({ error: 'Invalid message ID' });
+    }
+
+    const message = await UserMessage.findByIdAndDelete(id);
+
+    if (!message) {
+      return res.status(404).json({ error: 'User message not found' });
+    }
+
+    res.json({ message: 'User message deleted successfully' });
   })
 };

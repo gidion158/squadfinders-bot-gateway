@@ -76,7 +76,7 @@ const router = express.Router();
  *       200:
  *         description: List of prefilter results with pagination
  */
-router.get('/', authMiddleware, authorizeRole(['admin', 'viewer']), prefilterResultController.getAll);
+router.get('/', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), prefilterResultController.getAll);
 
 /**
  * @swagger
@@ -98,7 +98,7 @@ router.get('/', authMiddleware, authorizeRole(['admin', 'viewer']), prefilterRes
  *       404:
  *         description: Prefilter result not found
  */
-router.get('/:id', authMiddleware, authorizeRole(['admin', 'viewer']), prefilterResultController.getById);
+router.get('/:id', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), prefilterResultController.getById);
 
 /**
  * @swagger
@@ -118,7 +118,7 @@ router.get('/:id', authMiddleware, authorizeRole(['admin', 'viewer']), prefilter
  *       201:
  *         description: Prefilter result created successfully
  */
-router.post('/', authMiddleware, authorizeRole(['admin']), prefilterResultController.create);
+router.post('/', authMiddleware, authorizeRole(['superadmin', 'admin']), prefilterResultController.create);
 
 /**
  * @swagger
@@ -144,7 +144,7 @@ router.post('/', authMiddleware, authorizeRole(['admin']), prefilterResultContro
  *       200:
  *         description: Prefilter result updated successfully
  */
-router.put('/:id', authMiddleware, authorizeRole(['admin']), prefilterResultController.update);
+router.put('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), prefilterResultController.update);
 
 /**
  * @swagger
@@ -170,7 +170,7 @@ router.put('/:id', authMiddleware, authorizeRole(['admin']), prefilterResultCont
  *       200:
  *         description: Prefilter result updated successfully
  */
-router.patch('/:id', authMiddleware, authorizeRole(['admin']), prefilterResultController.update);
+router.patch('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), prefilterResultController.update);
 
 /**
  * @swagger
@@ -190,6 +190,6 @@ router.patch('/:id', authMiddleware, authorizeRole(['admin']), prefilterResultCo
  *       200:
  *         description: Prefilter result deleted successfully
  */
-router.delete('/:id', authMiddleware, authorizeRole(['admin']), prefilterResultController.delete);
+router.delete('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), prefilterResultController.delete);
 
 export default router;

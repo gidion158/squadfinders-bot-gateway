@@ -1,5 +1,5 @@
 import express from 'express';
-import { userMessageController } from '../controllers/userMessageController.js';
+import { userSeenController } from '../controllers/userSeenController.js';
 import { authMiddleware, authorizeRole } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -8,34 +8,34 @@ const router = express.Router();
  * @swagger
  * components:
  *   schemas:
- *     UserMessage:
+ *     UserSeen:
  *       type: object
  *       required:
  *         - user_id
- *         - message_date
- *         - message
  *       properties:
  *         user_id:
  *           type: string
- *           description: User identifier
+ *           description: Unique user identifier
  *         username:
  *           type: string
  *           description: Username
- *         message_date:
- *           type: string
- *           format: date-time
- *           description: When the message was sent
- *         message:
- *           type: string
- *           description: The message content
+ *         seen_ids:
+ *           type: array
+ *           items:
+ *             type: number
+ *           description: Array of seen message IDs
+ *         active:
+ *           type: boolean
+ *           default: true
+ *           description: Whether the record is active
  */
 
 /**
  * @swagger
- * /api/user-messages:
+ * /api/user-seen:
  *   get:
- *     summary: Get all user messages
- *     tags: [User Messages]
+ *     summary: Get all user seen records
+ *     tags: [User Seen]
  *     security:
  *       - basicAuth: []
  *     parameters:
@@ -48,6 +48,10 @@ const router = express.Router();
  *         schema:
  *           type: string
  *       - in: query
+ *         name: active
+ *         schema:
+ *           type: boolean
+ *       - in: query
  *         name: page
  *         schema:
  *           type: integer
@@ -59,16 +63,16 @@ const router = express.Router();
  *           default: 100
  *     responses:
  *       200:
- *         description: List of user messages with pagination
+ *         description: List of user seen records with pagination
  */
-router.get('/', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), userMessageController.getAll);
+router.get('/', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), userSeenController.getAll);
 
 /**
  * @swagger
- * /api/user-messages/{id}:
+ * /api/user-seen/{id}:
  *   get:
- *     summary: Get user message by ID
- *     tags: [User Messages]
+ *     summary: Get user seen record by ID
+ *     tags: [User Seen]
  *     security:
  *       - basicAuth: []
  *     parameters:
@@ -79,18 +83,18 @@ router.get('/', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer'])
  *           type: string
  *     responses:
  *       200:
- *         description: User message details
+ *         description: User seen record details
  *       404:
- *         description: User message not found
+ *         description: User seen record not found
  */
-router.get('/:id', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), userMessageController.getById);
+router.get('/:id', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), userSeenController.getById);
 
 /**
  * @swagger
- * /api/user-messages:
+ * /api/user-seen:
  *   post:
- *     summary: Create new user message (Admin only)
- *     tags: [User Messages]
+ *     summary: Create new user seen record (SuperAdmin/Admin only)
+ *     tags: [User Seen]
  *     security:
  *       - basicAuth: []
  *     requestBody:
@@ -98,19 +102,19 @@ router.get('/:id', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/UserMessage'
+ *             $ref: '#/components/schemas/UserSeen'
  *     responses:
  *       201:
- *         description: User message created successfully
+ *         description: User seen record created successfully
  */
-router.post('/', authMiddleware, authorizeRole(['superadmin', 'admin']), userMessageController.create);
+router.post('/', authMiddleware, authorizeRole(['superadmin', 'admin']), userSeenController.create);
 
 /**
  * @swagger
- * /api/user-messages/{id}:
+ * /api/user-seen/{id}:
  *   put:
- *     summary: Update user message (Admin only)
- *     tags: [User Messages]
+ *     summary: Update user seen record (SuperAdmin/Admin only)
+ *     tags: [User Seen]
  *     security:
  *       - basicAuth: []
  *     parameters:
@@ -124,19 +128,19 @@ router.post('/', authMiddleware, authorizeRole(['superadmin', 'admin']), userMes
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/UserMessage'
+ *             $ref: '#/components/schemas/UserSeen'
  *     responses:
  *       200:
- *         description: User message updated successfully
+ *         description: User seen record updated successfully
  */
-router.put('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), userMessageController.update);
+router.put('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), userSeenController.update);
 
 /**
  * @swagger
- * /api/user-messages/{id}:
+ * /api/user-seen/{id}:
  *   patch:
- *     summary: Partially update user message (Admin only)
- *     tags: [User Messages]
+ *     summary: Partially update user seen record (SuperAdmin/Admin only)
+ *     tags: [User Seen]
  *     security:
  *       - basicAuth: []
  *     parameters:
@@ -150,19 +154,19 @@ router.put('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), userM
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/UserMessage'
+ *             $ref: '#/components/schemas/UserSeen'
  *     responses:
  *       200:
- *         description: User message updated successfully
+ *         description: User seen record updated successfully
  */
-router.patch('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), userMessageController.update);
+router.patch('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), userSeenController.update);
 
 /**
  * @swagger
- * /api/user-messages/{id}:
+ * /api/user-seen/{id}:
  *   delete:
- *     summary: Delete user message (Admin only)
- *     tags: [User Messages]
+ *     summary: Delete user seen record (SuperAdmin/Admin only)
+ *     tags: [User Seen]
  *     security:
  *       - basicAuth: []
  *     parameters:
@@ -173,8 +177,8 @@ router.patch('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), use
  *           type: string
  *     responses:
  *       200:
- *         description: User message deleted successfully
+ *         description: User seen record deleted successfully
  */
-router.delete('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), userMessageController.delete);
+router.delete('/:id', authMiddleware, authorizeRole(['superadmin', 'admin']), userSeenController.delete);
 
 export default router;

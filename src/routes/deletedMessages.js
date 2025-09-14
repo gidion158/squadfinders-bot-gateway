@@ -16,7 +16,7 @@ const router = express.Router();
  *       200:
  *         description: Deletion statistics including counts and averages
  */
-router.get('/stats', authMiddleware, authorizeRole(['admin', 'viewer']), deletedMessageController.getStats);
+router.get('/stats', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), deletedMessageController.getStats);
 
 /**
  * @swagger
@@ -37,7 +37,7 @@ router.get('/stats', authMiddleware, authorizeRole(['admin', 'viewer']), deleted
  *       200:
  *         description: Daily deletion counts
  */
-router.get('/daily', authMiddleware, authorizeRole(['admin', 'viewer']), deletedMessageController.getDailyStats);
+router.get('/daily', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), deletedMessageController.getDailyStats);
 
 /**
  * @swagger
@@ -58,6 +58,6 @@ router.get('/daily', authMiddleware, authorizeRole(['admin', 'viewer']), deleted
  *       200:
  *         description: Deletion chart data with counts and average deletion time
  */
-router.get('/chart', authMiddleware, authorizeRole(['admin', 'viewer']), deletedMessageController.getChartData);
+router.get('/chart', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), deletedMessageController.getChartData);
 
 export default router;

@@ -16,7 +16,7 @@ const router = express.Router();
  *       200:
  *         description: Dashboard statistics including counts for all models
  */
-router.get('/stats', authMiddleware, authorizeRole(['admin', 'viewer']), dashboardController.getStats);
+router.get('/stats', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), dashboardController.getStats);
 
 /**
  * @swagger
@@ -30,7 +30,7 @@ router.get('/stats', authMiddleware, authorizeRole(['admin', 'viewer']), dashboa
  *       200:
  *         description: Player count by platform
  */
-router.get('/platform-distribution', authMiddleware, authorizeRole(['admin', 'viewer']), dashboardController.getPlatformDistribution);
+router.get('/platform-distribution', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), dashboardController.getPlatformDistribution);
 
 /**
  * @swagger
@@ -44,7 +44,7 @@ router.get('/platform-distribution', authMiddleware, authorizeRole(['admin', 'vi
  *       200:
  *         description: Messages count by day
  */
-router.get('/messages-chart', authMiddleware, authorizeRole(['admin', 'viewer']), dashboardController.getMessagesChartData);
+router.get('/messages-chart', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), dashboardController.getMessagesChartData);
 
 /**
  * @swagger
@@ -58,7 +58,7 @@ router.get('/messages-chart', authMiddleware, authorizeRole(['admin', 'viewer'])
  *       200:
  *         description: Message count by AI status
  */
-router.get('/ai-status-distribution', authMiddleware, authorizeRole(['admin', 'viewer']), dashboardController.getAIStatusDistribution);
+router.get('/ai-status-distribution', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), dashboardController.getAIStatusDistribution);
 
 /**
  * @swagger
@@ -79,6 +79,6 @@ router.get('/ai-status-distribution', authMiddleware, authorizeRole(['admin', 'v
  *       200:
  *         description: Deleted messages count by day with average deletion time
  */
-router.get('/deleted-messages-chart', authMiddleware, authorizeRole(['admin', 'viewer']), dashboardController.getDeletedMessagesChartData);
+router.get('/deleted-messages-chart', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), dashboardController.getDeletedMessagesChartData);
 
 export default router;
