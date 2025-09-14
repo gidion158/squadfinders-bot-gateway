@@ -19,11 +19,11 @@ const router = express.Router();
  *         username:
  *           type: string
  *           description: Username
- *         seen_ids:
+*         message_ids:
  *           type: array
  *           items:
  *             type: number
- *           description: Array of seen message IDs
+*           description: Array of message IDs that the user has seen
  *         active:
  *           type: boolean
  *           default: true

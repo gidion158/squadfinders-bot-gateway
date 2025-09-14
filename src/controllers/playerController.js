@@ -52,7 +52,7 @@ export const playerController = {
       active: true 
     });
     
-    const seenMessageIds = userSeen ? userSeen.seen_ids : [];
+    const seenMessageIds = userSeen ? userSeen.message_ids : [];
     
     // Find active players excluding those with message_ids in seen list
     const players = await Player.find({

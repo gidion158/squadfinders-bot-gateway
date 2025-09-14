@@ -29,7 +29,7 @@ const authorizeUser = async (username, password, cb) => {
 // A helper to get user details (including role) after they've been authenticated.
 const getUserDetails = async (username) => {
     if (username === config.adminAuth.user) {
-        return { email: username, role: 'admin' };
+        return { email: username, role: 'superadmin' };
     }
     // Use .lean() for a plain JS object, which is faster.
     const user = await AdminUser.findOne({ email: username.toLowerCase() }).lean();

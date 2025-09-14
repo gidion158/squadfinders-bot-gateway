@@ -10,9 +10,10 @@ const UserSeenSchema = new mongoose.Schema({
     type: String,
     default: null
   },
-  seen_ids: {
+  message_ids: {
     type: [Number],
-    default: []
+    default: [],
+    description: 'Array of message IDs that the user has seen'
   },
   active: {
     type: Boolean,
