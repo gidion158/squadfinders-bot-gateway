@@ -1,7 +1,7 @@
 // routes/players.js
 import express from 'express';
-import { playerController } from '../controllers/playerController.js';
-import { authMiddleware, authorizeRole } from '../middleware/auth.js';
+import {playerController} from '../controllers/playerController.js';
+import {authMiddleware, authorizeRole} from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -88,7 +88,7 @@ const router = express.Router();
  */
 router.get('/', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), playerController.getAll);
 /**
-/**
+ /**
  * @swagger
  * /api/players/squad:
  *   get:
@@ -135,7 +135,7 @@ router.get('/', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer'])
  *         description: Missing user_id parameter
  */
 router.get('/squad', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), playerController.getPlayersForSquad);
-
+/**
  * @swagger
  * /api/players/{id}:
  *   get:
