@@ -1,4 +1,5 @@
 import { Player } from '../models/index.js';
+import { UserSeen } from '../models/index.js';
 import { handleAsyncError } from '../utils/errorHandler.js';
 import { validateObjectId, validateMessageId } from '../utils/validators.js';
 import createCsvWriter from 'csv-writer';
@@ -35,6 +36,39 @@ export const playerController = {
     });
   }),
 
+  // Get active players for squad (excluding seen ones)
+  getPlayersForSquad: handleAsyncError(async (req, res) => {
+    const { user_id, limit = 50 } = req.query;
+    
+    if (!user_id) {
+      return res.status(400).json({ error: 'user_id query parameter is required' });
+    }
+
+    const maxLimit = Math.min(parseInt(limit), 100);
+    
+    // Get user's seen message IDs
+    const userSeen = await UserSeen.findOne({ 
+      user_id: user_id, 
+      active: true 
+    });
+    
+    const seenMessageIds = userSeen ? userSeen.seen_ids : [];
+    
+    // Find active players excluding those with message_ids in seen list
+    const players = await Player.find({
+      active: true,
+      message_id: { $nin: seenMessageIds }
+    })
+    .sort({ message_date: -1 })
+    .limit(maxLimit);
+
+    res.json({
+      data: players,
+      count: players.length,
+      excluded_seen_count: seenMessageIds.length,
+      user_id: user_id
+    });
+  }),
   // Get player by ID or message_id
   getById: handleAsyncError(async (req, res) => {
     const { id } = req.params;
