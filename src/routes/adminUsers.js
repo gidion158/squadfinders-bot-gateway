@@ -24,7 +24,7 @@ const router = express.Router();
  *           minLength: 6
  *         role:
  *           type: string
- *           enum: [admin, viewer]
+*           enum: [superadmin, admin, viewer]
  */
 
 /**
@@ -61,7 +61,7 @@ router.get('/', authMiddleware, authorizeRole(['superadmin']), adminUserControll
  * @swagger
  * /api/admin-users/{id}:
  *   get:
- *     summary: Get admin user by ID
+*     summary: Get admin user by ID (SuperAdmin only)
  *     tags: [Admin Users]
  *     security:
  *       - basicAuth: []
@@ -83,7 +83,7 @@ router.get('/:id', authMiddleware, authorizeRole(['superadmin']), adminUserContr
  * @swagger
  * /api/admin-users:
  *   post:
- *     summary: Create new admin user (Admin only)
+*     summary: Create new admin user (SuperAdmin only)
  *     tags: [Admin Users]
  *     security:
  *       - basicAuth: []
@@ -103,7 +103,7 @@ router.post('/', authMiddleware, authorizeRole(['superadmin']), adminUserControl
  * @swagger
  * /api/admin-users/{id}:
  *   put:
- *     summary: Update admin user (Admin only)
+*     summary: Update admin user (SuperAdmin only)
  *     tags: [Admin Users]
  *     security:
  *       - basicAuth: []
@@ -129,7 +129,7 @@ router.put('/:id', authMiddleware, authorizeRole(['superadmin']), adminUserContr
  * @swagger
  * /api/admin-users/{id}:
  *   patch:
- *     summary: Partially update admin user (Admin only)
+*     summary: Partially update admin user (SuperAdmin only)
  *     tags: [Admin Users]
  *     security:
  *       - basicAuth: []
@@ -155,7 +155,7 @@ router.patch('/:id', authMiddleware, authorizeRole(['superadmin']), adminUserCon
  * @swagger
  * /api/admin-users/{id}:
  *   delete:
- *     summary: Delete admin user (Admin only)
+*     summary: Delete admin user (SuperAdmin only)
  *     tags: [Admin Users]
  *     security:
  *       - basicAuth: []

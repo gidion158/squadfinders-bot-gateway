@@ -320,7 +320,7 @@ export const adminJS = new AdminJS({
         showProperties: [
           'user_id',
           'username',
-          'seen_ids',
+          'message_ids',
           'active',
           'createdAt',
           'updatedAt'
@@ -423,7 +423,7 @@ export const adminJS = new AdminJS({
             isVisible: {
               list: true,
               show: true,
-              edit: isSuperAdmin,
+              edit: false,
               filter: true
             }
           },
