@@ -88,6 +88,54 @@ const router = express.Router();
  */
 router.get('/', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), playerController.getAll);
 /**
+/**
+ * @swagger
+ * /api/players/squad:
+ *   get:
+ *     summary: Get active players for squad (excluding seen ones)
+ *     tags: [Players]
+ *     security:
+ *       - basicAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: user_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID to exclude seen players for
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *           maximum: 100
+ *         description: Maximum number of players to return
+ *     responses:
+ *       200:
+ *         description: List of active players excluding those seen by the user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Player'
+ *                 count:
+ *                   type: integer
+ *                   description: Number of players returned
+ *                 excluded_seen_count:
+ *                   type: integer
+ *                   description: Number of players excluded because they were seen
+ *                 user_id:
+ *                   type: string
+ *                   description: The user ID used for filtering
+ *       400:
+ *         description: Missing user_id parameter
+ */
+router.get('/squad', authMiddleware, authorizeRole(['superadmin', 'admin', 'viewer']), playerController.getPlayersForSquad);
+
  * @swagger
  * /api/players/{id}:
  *   get:
