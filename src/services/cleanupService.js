@@ -1,5 +1,6 @@
 import { UserSeen, Player } from '../models/index.js';
 import { config } from '../config/index.js';
+import { logCleanup, logError } from '../utils/logger.js';
 
 export class CleanupService {
   constructor() {
@@ -24,17 +25,22 @@ export class CleanupService {
   // Start UserSeen cleanup service
   startUserSeenCleanup() {
     if (!config.userSeenCleanup.enabled) {
-      console.log('⚠️ UserSeen cleanup service is disabled');
+      logCleanup('UserSeen cleanup service disabled', {
+        reason: 'USER_SEEN_CLEANUP_ENABLED is false'
+      });
       return;
     }
 
     if (this.isUserSeenRunning) {
-      console.log('⚠️ UserSeen cleanup service is already running');
+      logCleanup('UserSeen cleanup service already running');
       return;
     }
 
     const intervalHours = config.userSeenCleanup.intervalHours;
-    console.log(`🕒 Starting UserSeen cleanup service (checking every ${intervalHours} hour(s), disabling after ${config.userSeenCleanup.disableAfterHours} hours)`);
+    logCleanup('Starting UserSeen cleanup service', {
+      intervalHours: intervalHours,
+      disableAfterHours: config.userSeenCleanup.disableAfterHours
+    });
     
     this.userSeenIntervalId = setInterval(async () => {
       await this.cleanupUserSeen();
@@ -49,27 +55,32 @@ export class CleanupService {
   // Stop UserSeen cleanup service
   stopUserSeenCleanup() {
     if (this.userSeenIntervalId) {
+      logCleanup('UserSeen cleanup service stopped');
       clearInterval(this.userSeenIntervalId);
       this.userSeenIntervalId = null;
       this.isUserSeenRunning = false;
-      console.log('🛑 UserSeen cleanup service stopped');
     }
   }
 
   // Start Player cleanup service
   startPlayerCleanup() {
     if (!config.playerCleanup.enabled) {
-      console.log('⚠️ Player cleanup service is disabled');
+      logCleanup('Player cleanup service disabled', {
+        reason: 'PLAYER_CLEANUP_ENABLED is false'
+      });
       return;
     }
 
     if (this.isPlayerRunning) {
-      console.log('⚠️ Player cleanup service is already running');
+      logCleanup('Player cleanup service already running');
       return;
     }
 
     const intervalHours = config.playerCleanup.intervalHours;
-    console.log(`🕒 Starting Player cleanup service (checking every ${intervalHours} hour(s), disabling after ${config.playerCleanup.disableAfterHours} hours)`);
+    logCleanup('Starting Player cleanup service', {
+      intervalHours: intervalHours,
+      disableAfterHours: config.playerCleanup.disableAfterHours
+    });
     
     this.playerIntervalId = setInterval(async () => {
       await this.cleanupPlayers();
@@ -84,10 +95,10 @@ export class CleanupService {
   // Stop Player cleanup service
   stopPlayerCleanup() {
     if (this.playerIntervalId) {
+      logCleanup('Player cleanup service stopped');
       clearInterval(this.playerIntervalId);
       this.playerIntervalId = null;
       this.isPlayerRunning = false;
-      console.log('🛑 Player cleanup service stopped');
     }
   }
 
@@ -98,6 +109,11 @@ export class CleanupService {
     try {
       const cutoffTime = new Date(Date.now() - config.userSeenCleanup.disableAfterHours * 60 * 60 * 1000);
       
+      logCleanup('Starting UserSeen cleanup', {
+        cutoffTime: cutoffTime.toISOString(),
+        disableAfterHours: config.userSeenCleanup.disableAfterHours
+      });
+
       const result = await UserSeen.updateMany(
         {
           active: true,
@@ -109,10 +125,22 @@ export class CleanupService {
       );
 
       if (result.modifiedCount > 0) {
-        console.log(`🧹 Disabled ${result.modifiedCount} UserSeen records (older than ${config.userSeenCleanup.disableAfterHours} hours)`);
+        logCleanup('UserSeen cleanup completed', {
+          disabledCount: result.modifiedCount,
+          disableAfterHours: config.userSeenCleanup.disableAfterHours,
+          cutoffTime: cutoffTime.toISOString()
+        });
+      } else {
+        logCleanup('UserSeen cleanup - no records to disable', {
+          cutoffTime: cutoffTime.toISOString()
+        });
       }
     } catch (error) {
-      console.error('❌ Error in UserSeen cleanup service:', error.message);
+      logError(error, {
+        service: 'cleanup',
+        action: 'cleanupUserSeen',
+        config: config.userSeenCleanup
+      });
     }
   }
 
@@ -123,6 +151,11 @@ export class CleanupService {
     try {
       const cutoffTime = new Date(Date.now() - config.playerCleanup.disableAfterHours * 60 * 60 * 1000);
       
+      logCleanup('Starting Player cleanup', {
+        cutoffTime: cutoffTime.toISOString(),
+        disableAfterHours: config.playerCleanup.disableAfterHours
+      });
+
       const result = await Player.updateMany(
         {
           active: true,
@@ -134,10 +167,22 @@ export class CleanupService {
       );
 
       if (result.modifiedCount > 0) {
-        console.log(`🧹 Disabled ${result.modifiedCount} Players (message_date older than ${config.playerCleanup.disableAfterHours} hours)`);
+        logCleanup('Player cleanup completed', {
+          disabledCount: result.modifiedCount,
+          disableAfterHours: config.playerCleanup.disableAfterHours,
+          cutoffTime: cutoffTime.toISOString()
+        });
+      } else {
+        logCleanup('Player cleanup - no records to disable', {
+          cutoffTime: cutoffTime.toISOString()
+        });
       }
     } catch (error) {
-      console.error('❌ Error in Player cleanup service:', error.message);
+      logError(error, {
+        service: 'cleanup',
+        action: 'cleanupPlayers',
+        config: config.playerCleanup
+      });
     }
   }
 

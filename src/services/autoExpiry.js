@@ -1,5 +1,6 @@
 import { Message } from '../models/index.js';
 import { config } from '../config/index.js';
+import { logAutoExpiry, logError } from '../utils/logger.js';
 
 export class AutoExpiryService {
   constructor() {
@@ -13,17 +14,24 @@ export class AutoExpiryService {
   // Start the auto-expiry job
   start(intervalMinutes = null) {
     if (!this.enabled) {
-      console.log('⚠️ Auto-expiry service is disabled');
+      logAutoExpiry('Service disabled', { 
+        reason: 'AUTO_EXPIRY_ENABLED is false',
+        config: { enabled: this.enabled }
+      });
       return;
     }
 
     if (this.isRunning) {
-      console.log('⚠️ Auto-expiry service is already running');
+      logAutoExpiry('Service already running', { intervalId: this.intervalId });
       return;
     }
 
     const interval = intervalMinutes || this.intervalMinutes;
-    console.log(`🕒 Starting auto-expiry service (checking every ${interval} minute(s), expiring after ${this.expiryMinutes} minutes)`);
+    logAutoExpiry('Service starting', {
+      intervalMinutes: interval,
+      expiryMinutes: this.expiryMinutes,
+      enabled: this.enabled
+    });
     
     this.intervalId = setInterval(async () => {
       await this.expireOldMessages();
@@ -39,9 +47,9 @@ export class AutoExpiryService {
   stop() {
     if (this.intervalId) {
       clearInterval(this.intervalId);
+      logAutoExpiry('Service stopped', { intervalId: this.intervalId });
       this.intervalId = null;
       this.isRunning = false;
-      console.log('🛑 Auto-expiry service stopped');
     }
   }
 
@@ -64,8 +72,41 @@ export class AutoExpiryService {
     if (!this.enabled) return;
 
     try {
+      logAutoExpiry('Starting expiry check', {
+        expiryMinutes: this.expiryMinutes,
+        cutoffTime: new Date(Date.now() - this.expiryMinutes * 60 * 1000).toISOString()
+      });
+
       const expiryTime = new Date(Date.now() - this.expiryMinutes * 60 * 1000);
       
+      // First, count messages that will be expired
+      const messagesToExpireCount = await Message.countDocuments({
+        ai_status: { $in: ['pending', 'pending_prefilter', 'processing'] },
+        message_date: { $lt: expiryTime }
+      });
+
+      if (messagesToExpireCount > 0) {
+        // Get sample of messages for logging
+        const sampleMessages = await Message.find({
+          ai_status: { $in: ['pending', 'pending_prefilter', 'processing'] },
+          message_date: { $lt: expiryTime }
+        })
+        .select('message_id message_date ai_status')
+        .limit(10)
+        .lean();
+
+        logAutoExpiry('Found messages to expire', {
+          totalCount: messagesToExpireCount,
+          expiryTime: expiryTime.toISOString(),
+          sampleMessages: sampleMessages.map(m => ({
+            messageId: m.message_id,
+            messageDate: m.message_date.toISOString(),
+            aiStatus: m.ai_status,
+            ageMinutes: Math.round((Date.now() - m.message_date.getTime()) / (1000 * 60))
+          }))
+        });
+      }
+
       // Process in batches to handle large datasets efficiently
       const batchSize = 1000;
       let totalExpired = 0;
@@ -84,6 +125,14 @@ export class AutoExpiryService {
 
         totalExpired += result.modifiedCount;
         
+        if (result.modifiedCount > 0) {
+          logAutoExpiry('Batch expired', {
+            batchExpired: result.modifiedCount,
+            totalExpiredSoFar: totalExpired,
+            batchSize: batchSize
+          });
+        }
+
         // If we processed fewer than the batch size, we're done
         if (result.modifiedCount < batchSize) {
           break;
@@ -91,10 +140,26 @@ export class AutoExpiryService {
       }
 
       if (totalExpired > 0) {
-        console.log(`⏰ Expired ${totalExpired} old pending/prefilter messages (older than ${this.expiryMinutes} minutes)`);
+        logAutoExpiry('Expiry completed', {
+          totalExpired: totalExpired,
+          expiryMinutes: this.expiryMinutes,
+          expiryTime: expiryTime.toISOString()
+        });
+      } else {
+        logAutoExpiry('No messages to expire', {
+          expiryTime: expiryTime.toISOString(),
+          expiryMinutes: this.expiryMinutes
+        });
       }
     } catch (error) {
-      console.error('❌ Error in auto-expiry service:', error.message);
+      logError(error, { 
+        service: 'auto-expiry',
+        action: 'expireOldMessages',
+        config: {
+          enabled: this.enabled,
+          expiryMinutes: this.expiryMinutes
+        }
+      });
     }
   }
 

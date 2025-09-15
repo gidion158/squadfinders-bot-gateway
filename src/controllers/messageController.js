@@ -3,7 +3,9 @@ import { DeletedMessageStats, DailyDeletion } from '../models/index.js';
 import { handleAsyncError } from '../utils/errorHandler.js';
 import { validateObjectId, validateMessageId } from '../utils/validators.js';
 import { config } from '../config/index.js';
-import createCsvWriter from 'csv-writer';
+import { logMessageProcessing, logError, createServiceLogger } from '../utils/logger.js';
+
+const messageLogger = createServiceLogger('message-controller');
 
 // Helper method to update deletion statistics  
 const updateDeletionStats = async () => {
@@ -98,13 +100,34 @@ export const messageController = {
   getUnprocessed: handleAsyncError(async (req, res) => {
     const { limit = 50 } = req.query;
     const maxLimit = Math.min(parseInt(limit), 100);
+    
+    messageLogger.info('getUnprocessed request received', {
+      requestedLimit: limit,
+      maxLimit: maxLimit,
+      autoExpiryEnabled: config.autoExpiry.enabled,
+      expiryMinutes: config.autoExpiry.expiryMinutes
+    });
 
     // Only expire messages if auto-expiry is enabled
     if (config.autoExpiry.enabled) {
       const expiryTime = new Date(Date.now() - config.autoExpiry.expiryMinutes * 60 * 1000);
       
+      // Count messages that will be expired
+      const expiredCount = await Message.countDocuments({
+        ai_status: 'pending',
+        message_date: { $lt: expiryTime }
+      });
+
+      if (expiredCount > 0) {
+        messageLogger.info('Expiring old pending messages', {
+          count: expiredCount,
+          expiryTime: expiryTime.toISOString(),
+          expiryMinutes: config.autoExpiry.expiryMinutes
+        });
+      }
+
       // First, expire old pending messages
-      await Message.updateMany(
+      const expireResult = await Message.updateMany(
         {
           ai_status: 'pending',
           message_date: { $lt: expiryTime }
@@ -113,6 +136,13 @@ export const messageController = {
           $set: { ai_status: 'expired' }
         }
       );
+
+      if (expireResult.modifiedCount > 0) {
+        messageLogger.info('Expired old pending messages', {
+          expiredCount: expireResult.modifiedCount,
+          expiryTime: expiryTime.toISOString()
+        });
+      }
     }
 
     const expiryTime = config.autoExpiry.enabled 
@@ -128,9 +158,24 @@ export const messageController = {
     .sort({ message_date: 1 }) // Oldest first
     .limit(maxLimit);
 
+    messageLogger.info('Found pending messages for processing', {
+      foundCount: recentPendingMessages.length,
+      requestedLimit: maxLimit,
+      oldestMessageDate: recentPendingMessages.length > 0 ? recentPendingMessages[0].message_date.toISOString() : null,
+      newestMessageDate: recentPendingMessages.length > 0 ? recentPendingMessages[recentPendingMessages.length - 1].message_date.toISOString() : null
+    });
+
     // Mark these messages as processing
     if (recentPendingMessages.length > 0) {
       const messageIds = recentPendingMessages.map(msg => msg._id);
+      const messageIdNumbers = recentPendingMessages.map(msg => msg.message_id);
+      
+      messageLogger.info('Marking messages as processing', {
+        count: messageIds.length,
+        messageIds: messageIdNumbers.slice(0, 10), // Log first 10 IDs
+        totalIds: messageIdNumbers.length
+      });
+
       await Message.updateMany(
         { _id: { $in: messageIds } },
         { $set: { ai_status: 'processing' } }
@@ -142,6 +187,11 @@ export const messageController = {
       });
     }
 
+    messageLogger.info('getUnprocessed response sent', {
+      returnedCount: recentPendingMessages.length,
+      requestedLimit: maxLimit
+    });
+
     res.json({
       data: recentPendingMessages,
       count: recentPendingMessages.length
@@ -152,13 +202,34 @@ export const messageController = {
   getPendingPrefilter: handleAsyncError(async (req, res) => {
     const { limit = 50 } = req.query;
     const maxLimit = Math.min(parseInt(limit), 100);
+    
+    messageLogger.info('getPendingPrefilter request received', {
+      requestedLimit: limit,
+      maxLimit: maxLimit,
+      autoExpiryEnabled: config.autoExpiry.enabled,
+      expiryMinutes: config.autoExpiry.expiryMinutes
+    });
 
     // Only expire messages if auto-expiry is enabled
     if (config.autoExpiry.enabled) {
       const expiryTime = new Date(Date.now() - config.autoExpiry.expiryMinutes * 60 * 1000);
       
+      // Count messages that will be expired
+      const expiredCount = await Message.countDocuments({
+        ai_status: 'pending_prefilter',
+        message_date: { $lt: expiryTime }
+      });
+
+      if (expiredCount > 0) {
+        messageLogger.info('Expiring old pending_prefilter messages', {
+          count: expiredCount,
+          expiryTime: expiryTime.toISOString(),
+          expiryMinutes: config.autoExpiry.expiryMinutes
+        });
+      }
+
       // First, expire old pending_prefilter messages by changing status to expired
-      await Message.updateMany(
+      const expireResult = await Message.updateMany(
         {
           ai_status: 'pending_prefilter',
           message_date: { $lt: expiryTime }
@@ -167,6 +238,13 @@ export const messageController = {
           $set: { ai_status: 'expired' }
         }
       );
+
+      if (expireResult.modifiedCount > 0) {
+        messageLogger.info('Expired old pending_prefilter messages', {
+          expiredCount: expireResult.modifiedCount,
+          expiryTime: expiryTime.toISOString()
+        });
+      }
     }
 
     const expiryTime = config.autoExpiry.enabled 
@@ -181,9 +259,24 @@ export const messageController = {
     .sort({ message_date: 1 }) // Oldest first
     .limit(maxLimit);
 
+    messageLogger.info('Found pending_prefilter messages', {
+      foundCount: pendingPrefilterMessages.length,
+      requestedLimit: maxLimit,
+      oldestMessageDate: pendingPrefilterMessages.length > 0 ? pendingPrefilterMessages[0].message_date.toISOString() : null,
+      newestMessageDate: pendingPrefilterMessages.length > 0 ? pendingPrefilterMessages[pendingPrefilterMessages.length - 1].message_date.toISOString() : null
+    });
+
     // Mark these messages as pending
     if (pendingPrefilterMessages.length > 0) {
       const messageIds = pendingPrefilterMessages.map(msg => msg._id);
+      const messageIdNumbers = pendingPrefilterMessages.map(msg => msg.message_id);
+      
+      messageLogger.info('Marking messages as pending', {
+        count: messageIds.length,
+        messageIds: messageIdNumbers.slice(0, 10), // Log first 10 IDs
+        totalIds: messageIdNumbers.length
+      });
+
       await Message.updateMany(
         { _id: { $in: messageIds } },
         { $set: { ai_status: 'pending' } }
@@ -194,6 +287,11 @@ export const messageController = {
         msg.ai_status = 'pending';
       });
     }
+
+    messageLogger.info('getPendingPrefilter response sent', {
+      returnedCount: pendingPrefilterMessages.length,
+      requestedLimit: maxLimit
+    });
 
     res.json({
       data: pendingPrefilterMessages,
@@ -223,6 +321,14 @@ export const messageController = {
   create: handleAsyncError(async (req, res) => {
     const { sender, group, message } = req.body;
     
+    messageLogger.info('Creating new message', {
+      senderId: sender?.id,
+      senderUsername: sender?.username,
+      groupId: group?.group_id,
+      groupTitle: group?.group_title,
+      messageLength: message?.length
+    });
+
     // Spam validation: Check if the same sender in the same group has posted the exact same message in the past hour
     if (sender && sender.id && group && group.group_id && message) {
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
@@ -235,6 +341,13 @@ export const messageController = {
       });
       
       if (existingMessage) {
+        messageLogger.warn('Duplicate message detected', {
+          senderId: sender.id,
+          groupId: group.group_id,
+          existingMessageId: existingMessage.message_id,
+          existingMessageDate: existingMessage.message_date.toISOString()
+        });
+
         return res.status(409).json({ 
           error: 'Duplicate message detected',
           message: 'This sender has already posted the same message in this group within the past hour'
@@ -244,6 +357,13 @@ export const messageController = {
     
     const newMessage = new Message(req.body);
     await newMessage.save();
+    
+    messageLogger.info('Message created successfully', {
+      messageId: newMessage.message_id,
+      aiStatus: newMessage.ai_status,
+      messageDate: newMessage.message_date.toISOString()
+    });
+
     res.status(201).json(newMessage);
   }),
 

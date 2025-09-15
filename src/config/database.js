@@ -1,12 +1,18 @@
 import mongoose from 'mongoose';
 import { config } from './index.js';
+import logger from '../utils/logger.js';
 
 export const connectDatabase = async () => {
   try {
     await mongoose.connect(config.mongodb.uri);
-    console.log('✅ MongoDB connected successfully');
+    logger.info('MongoDB connected successfully', {
+      uri: config.mongodb.uri.replace(/\/\/.*@/, '//***:***@') // Hide credentials in logs
+    });
   } catch (error) {
-    console.error('❌ MongoDB connection failed:', error.message);
+    logger.error('MongoDB connection failed', {
+      error: error.message,
+      uri: config.mongodb.uri.replace(/\/\/.*@/, '//***:***@')
+    });
     process.exit(1);
   }
 };
@@ -14,8 +20,10 @@ export const connectDatabase = async () => {
 export const disconnectDatabase = async () => {
   try {
     await mongoose.disconnect();
-    console.log('📴 MongoDB disconnected');
+    logger.info('MongoDB disconnected');
   } catch (error) {
-    console.error('❌ Error disconnecting from MongoDB:', error.message);
+    logger.error('Error disconnecting from MongoDB', {
+      error: error.message
+    });
   }
 };
