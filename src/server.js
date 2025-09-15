@@ -2,6 +2,8 @@ import express from 'express';
 import AdminJSExpress from '@adminjs/express';
 import swaggerUi from 'swagger-ui-express';
 import session from 'express-session';
+import fs from 'fs';
+import path from 'path';
 
 import { connectDatabase } from './config/database.js';
 import { config } from './config/index.js';
@@ -13,12 +15,22 @@ import apiRoutes from './routes/index.js';
 import { AdminUser } from './models/index.js';
 import { autoExpiryService } from './services/autoExpiry.js';
 import { cleanupService } from './services/cleanupService.js';
+import logger, { logApiRequest } from './utils/logger.js';
 
 // Initialize Express app
 const app = express();
 
+// Create logs directory if it doesn't exist
+const logsDir = path.join(process.cwd(), 'logs');
+if (!fs.existsSync(logsDir)) {
+  fs.mkdirSync(logsDir, { recursive: true });
+}
+
 // Connect to database
 await connectDatabase();
+
+// Add request logging middleware (before other middleware)
+app.use(logApiRequest);
 
 // Session configuration for AdminJS
 const sessionOptions = {
@@ -113,10 +125,18 @@ const isProxyPass = config.server.proxypass;
 
 app.listen(PORT, () => {
   const baseUrl = isProxyPass ? URL : `${URL}:${PORT}`;
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Admin Panel: ${baseUrl}/admin`);
-  console.log(`🔗 API Docs: ${baseUrl}/docs`);
-  console.log(`⚡ API Base: ${baseUrl}/api`);
+  
+  logger.info('Server started successfully', {
+    port: PORT,
+    baseUrl: baseUrl,
+    adminPanel: `${baseUrl}/admin`,
+    apiDocs: `${baseUrl}/docs`,
+    apiBase: `${baseUrl}/api`,
+    environment: process.env.NODE_ENV || 'development',
+    autoExpiryEnabled: config.autoExpiry.enabled,
+    userSeenCleanupEnabled: config.userSeenCleanup.enabled,
+    playerCleanupEnabled: config.playerCleanup.enabled
+  });
   
   // Start auto-expiry service
   if (config.autoExpiry.enabled) {
@@ -129,14 +149,14 @@ app.listen(PORT, () => {
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, shutting down gracefully');
+  logger.info('SIGTERM received, shutting down gracefully');
   autoExpiryService.stop();
   cleanupService.stopAll();
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
-  console.log('SIGINT received, shutting down gracefully');
+  logger.info('SIGINT received, shutting down gracefully');
   autoExpiryService.stop();
   cleanupService.stopAll();
   process.exit(0);
